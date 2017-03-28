@@ -7,28 +7,10 @@ public class admin_home {
 	static Scanner sc=new Scanner(System.in);
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
+		// This is the first method to be called after logged in as Admin.
 		adminHome(); //call the Admin's home page
-		
-		
 	}
 	
-	public static void viewOwnProfile(){
-		System.out.println("View your own profile");
-		System.out.println("Press 0 to go back");
-		//create a procedure here to fetch admin details from database
-		
-		System.out.println("First Name :-> ");
-		System.out.println("Last Name :-> ");
-		System.out.println("D.O.B. :-> ");
-		System.out.println("Employee ID :-> ");
-		int choice=sc.nextInt();
-		if (choice==0) {
-			
-		}
-		
-	}
 	public static void adminHome(){
 		System.out.println("-----Welcome Admin------");
 		System.out.println("1. View own profile");
@@ -43,20 +25,21 @@ public class admin_home {
 		int admin_choice = sc.nextInt();
 		switch(admin_choice){
 		case 1:
+			//View admin's own profile
 			viewOwnProfile(); //option1: to view own profile
 			break;
 		case 2:
-			System.out.println("in choice 2");
-			enrollNewStudent();
 			//enroll a new student
+			enrollNewStudent();
 			break;
 		case 3:
-			System.out.println("in choice 3");
-			
+			//Admin enters student ID to view Student details
+			viewStudentDetails();
 			break;
 		case 4:
 			System.out.println("in choice 4");
-			
+			//main menu for View/Add course
+			menuViewAddCourse();
 			break;
 		case 5:
 			System.out.println("in choice 5");
@@ -83,10 +66,85 @@ public class admin_home {
 		
 		
 	}
+	
+	public static void viewOwnProfile(){
+		//method to View Admin's own profile.
+		System.out.println("View your own profile");
+		System.out.println("Press 0 to go back");
+		//create a procedure here to fetch admin details from database
+		
+		System.out.println("First Name :-> ");
+		System.out.println("Last Name :-> ");
+		System.out.println("D.O.B. :-> ");
+		System.out.println("Employee ID :-> ");
+		int choice=sc.nextInt();
+		if (choice==0) {
+			
+		}
+		
+	}
+
+	public static void menuViewAddCourse() {
+		// main menu for view/add ccourse
+		System.out.println("Select appropriate option");
+		System.out.println("0. Go back to previous menu");
+		System.out.println("1. View course");
+		System.out.println("2. Add course");
+		int course_choice=sc.nextInt();
+		if(course_choice==0)adminHome();
+		else if(course_choice==1)adminViewCourse();
+		else if(course_choice==2)adminAddCoure();
+		else{
+			System.out.println("Incorrect option. Going back to Admin's home page");
+			adminHome();
+		}
+		
+	}
+
+	public static void adminAddCoure() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public static void adminViewCourse() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public static void viewStudentDetails() {
+		// Admin can check student details
+		System.out.println("Enter Student ID :-> ");
+		int stud_id=sc.nextInt();
+		
+		//Run SQL query to validate if the particular Student ID exists in the databse or not.
+		//IF no then re-prompt to enter the student ID
+		//Else successful-> Show all student details
+		//After showing all student detail's user can press 0-go back or 1-enter grades.
+	}
 
 	public static void enrollNewStudent() {
 		// Enroll New Student function
+		System.out.println("----Enrolling New Student----");
+		System.out.println("Enter Student ID :--> ");
+		int stud_id=sc.nextInt();
+		System.out.println("Enter Student Name :--> ");
+		String stud_name=sc.nextLine();
+		System.out.println("Enter Student's First Name :--> ");
+		String stud_fname=sc.nextLine();
+		System.out.println("Enter Student's Last Name :--> ");
+		String stud_lname=sc.nextLine();
+		System.out.println("Enter Student's D.O.B (MM-DD-YYYY) :--> ");
+		String dob=sc.nextLine();
+		System.out.println("Enter Student's Level :--> ");
+		String stud_level=sc.nextLine();
+		System.out.println("Enter Student's Residency Status :--> ");
+		String stud_resi_status=sc.nextLine();
+		System.out.println("Enter amound owned (if any) :--> ");
+		float stud_amount=sc.nextFloat();
 		
+		//create a SQL query to enter all these data into the table and get the status if
+		//data was successfully inserted into the table or not. if successful-> display success message
+		//and go back to previous menu, else show error message and go back to previous menu
 		
 	}
 
