@@ -1,19 +1,18 @@
 package Admin;
 
+import java.util.*;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 import java.sql.*;
 
 public class admin_home {
 	
 	static Scanner sc=new Scanner(System.in);
 	
-	public static void main(String[] args) {
-		// This is the first method to be called after logged in as Admin.
-		adminHome(); //call the Admin's home page
-	}
-	
-	public static void adminHome(Connection conn, int personid) throws InterruptedException{
+
+	public static void adminHome(Connection conn, int personid) throws SQLException, InterruptedException, ParseException {
 
 		System.out.println("-----Welcome Admin------");
 		System.out.println("1. View own profile");
@@ -25,15 +24,16 @@ public class admin_home {
 		System.out.println("7. Enforce Add/Drop Deadline");
 		System.out.println("8. Logout");
 		System.out.println("Enter your choice :-> ");
-		int admin_choice = sc.nextInt();
+		try{
+			int admin_choice = sc.nextInt();
 		switch(admin_choice){
 		case 1:
 			//View admin's own profile
-			viewOwnProfile(); //option1: to view own profile
+			viewOwnProfile(conn, personid); //option1: to view own profile
 			break;
 		case 2:
 			//enroll a new student
-			enrollNewStudent();
+			enrollNewStudent(conn, personid);
 			break;
 		case 3:
 			//Admin enters student ID to view Student details
@@ -41,7 +41,7 @@ public class admin_home {
 			break;
 		case 4:
 			//main menu for View/Add course
-			menuViewAddCourse();
+			menuViewAddCourse(conn, personid);
 			break;
 		case 5:
 			menuViewAddClass();
@@ -66,7 +66,10 @@ public class admin_home {
 			break;
 			
 		}
-		
+		}
+		catch(InputMismatchException e){
+			 System.out.print(e.getMessage());
+		}
 		
 	}
 	
@@ -122,7 +125,7 @@ public class admin_home {
 				System.out.println("Class successfully added");
 				System.out.println("Enter 0 to go back to previous menu:-> ");
 				int choice = sc.nextInt();
-				if (choice==0)menuViewAddCourse();
+				if (choice==0)menuViewAddClass();
 		
 		
 	}
@@ -143,27 +146,27 @@ public class admin_home {
 		//create a sql query that fecthces all data for that course from classes table and display it on console.
 		System.out.println("Enter 0 to go back to previous menu:-> ");
 		int choice = sc.nextInt();
-		if (choice==0)menuViewAddCourse();
+		if (choice==0)menuViewAddClass();
 	}
 
-	public static void menuViewAddCourse() {
+	public static void menuViewAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
 		// main menu for view/add ccourse
 		System.out.println("Select appropriate option");
 		System.out.println("0. Go back to previous menu");
 		System.out.println("1. View course");
 		System.out.println("2. Add course");
 		int course_choice=sc.nextInt();
-		if(course_choice==0)adminHome();
-		else if(course_choice==1)adminViewCourse();
-		else if(course_choice==2)adminAddCoure();
+		if(course_choice==0)adminHome(conn, personid);
+		else if(course_choice==1)adminViewCourse(conn, personid);
+		else if(course_choice==2)adminAddCourse(conn, personid);
 		else{
 			System.out.println("Incorrect option. Going back to Admin's home page");
-			adminHome();
+			adminHome(conn, personid);
 		}
 		
 	}
 
-	public static void adminAddCoure() {
+	public static void adminAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
 		// Admin enters the course details.
 		System.out.println("1. Enter Course ID:-> ");
 		//dount here for the course ID. Entering as CSC111 or just 111? confirm once
@@ -181,39 +184,104 @@ public class admin_home {
 		//Prerequisite courses may take multiple inputs. If values are seperated by commas(,) break
 		//the string into values and update those in the database accordingly. if anyone is trying to
 		//create a SQL statement for this will have to discuss this before creating.
-		
+		int pre_req = 0;
 		String pre_req_courses=sc.next();
-		System.out.println("7. Enter if spacial approval required:->(0/1) ");
+		if(pre_req_courses.trim() != ""){
+			pre_req = 1;
+		}
+		
+		System.out.println("7. Enter if special approval required:->(0/1) ");
 		int approval_required=sc.nextInt();
 		System.out.println("8. Are credits as a Range of single credit(Y/N):-> ");
 		String range=sc.next();
+		int min_credit, max_credit;
 		if(range.equals("Y")){
 			System.out.println("Enter min_credit for the course:-> ");
-			float min_credit=sc.nextFloat();
+			min_credit=sc.nextInt();
 			System.out.println("Enter max_credit for the course:-> ");
-			float max_credit=sc.nextFloat();
+			max_credit=sc.nextInt();
 		}else{
 			System.out.println("Enter credits for the course:-> ");
-			float course_credit=sc.nextFloat();
+			max_credit=sc.nextInt();
+			min_credit = max_credit;
 			//this is the single credit value for the course, while updating in the database please
 			//enter this value in both the min_credit and max_credit in the course table database.
+		}
+		try{
+		PreparedStatement stmt1 = conn.prepareStatement("SELECT DID from department where DEPT_NAME=?");
+		stmt1.setString(1, dept_name);
+		ResultSet rs = stmt1.executeQuery();
+		int DID=0;
+		if(rs.next()){
+			DID = (rs.getInt("DID"));		
+			
+		}
+		
+		PreparedStatement stmt = conn.prepareStatement("INSERT INTO COURSE(CID, TITLE, DID, SP_PERMISSION, PRE_REQ, LVL, "
+				+ "MIN_CREDIT, MAX_CREDIT, GPA_REQ) VALUES(?,?,?,?,?,?,?,?,?)");
+		stmt.setString(1, course_id);
+		stmt.setString(2, course_title);
+		stmt.setInt(3, DID);
+		stmt.setInt(4, approval_required);
+		stmt.setInt(5, pre_req);
+		stmt.setString(6, course_level);
+		stmt.setInt(7, min_credit);
+		stmt.setInt(8, max_credit);
+		stmt.setFloat(9, gpa_req);
+		
+		stmt.executeUpdate();
+
+		String[] prereq = pre_req_courses.split(",");
+		for(String item : prereq){
+			PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
+			stmt2.setString(1,course_id);
+			stmt2.setString(2, item);
+			stmt2.executeQuery();
+		}
+		
+		System.out.println("Course added successfully");
+		menuViewAddCourse(conn, personid);
+		}
+		catch(Exception ex)
+		{
+			System.out.println("course not added successfully. Error: "+ex);
+			menuViewAddCourse(conn, personid);
 		}
 		//create a query here to add these values in the database table.
 		//if query is successful, display success message and go back to previous menu.
 		//if query is unsuccessful, display specific error message and go back to previous menu.
 	}
 	
-	public static void adminViewCourse() {
+	public static void adminViewCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 		// Admin enters the courseID and system shows all course details
-		System.out.println("Enter the course ID:--> ");
-		String course_id = sc.nextLine();
+		try{
+			System.out.println("Enter the course ID:--> ");
+			String course_id = sc.next();
 		
+		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM COURSE WHERE CID=?");
+		stmt.setString(1, course_id);
+		ResultSet rs = stmt.executeQuery();
 		//create a SQL query to fetch the course related data from database
 		//and display all fields.Take care while printing credits of course. If course
 		//has credit range display in the form of range else as single credit.
+		while(rs.next()){
+			System.out.println("CID: " +  rs.getString("CID"));
+			System.out.println("TITLE: " +  rs.getString("TITLE"));
+			System.out.println("DID: " +  rs.getInt("DID"));
+			System.out.println("SP_PERMISSION: " +  rs.getInt("SP_PERMISSION"));
+			System.out.println("PRE_REQ: " +  rs.getInt("PRE_REQ"));
+			System.out.println("LVL: " +  rs.getString("LVL"));
+			System.out.println("MIN_CREDIT: " +  rs.getInt("MIN_CREDIT"));
+			System.out.println("MAX_CREDIT: " +  rs.getInt("MAX_CREDIT"));
+			System.out.println("GPA_REQ: " +  rs.getFloat("GPA_REQ"));		
+		}
+		}
+		catch(Exception ex){
+			System.out.println("Can't view"+ex);
+		}
 		System.out.println("Enter 0 to go back to previous menu:-> ");
 		int choice = sc.nextInt();
-		if (choice==0)menuViewAddCourse();
+		if (choice==0)menuViewAddCourse(conn, personid);
 
 	}
 
@@ -228,7 +296,7 @@ public class admin_home {
 		//After showing all student detail's user can press 0-go back or 1-enter grades.
 	}
 
-	public static void viewOwnProfile(Connection conn,int personid) throws SQLException, ParseException{
+	public static void viewOwnProfile(Connection conn,int personid) throws SQLException, ParseException, InterruptedException{
 		System.out.println("View your own profile");
 		System.out.println("Press 0 to go back");
 		PreparedStatement stmt = conn.prepareStatement("SELECT FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMP_ID FROM ADMIN WHERE EMP_ID=?");
