@@ -1,5 +1,8 @@
+package Login;
+
 import java.sql.*;
 import java.util.Scanner;
+import Admin.*;
 
 
 public class Login {
@@ -56,7 +59,7 @@ public class Login {
         if(role.equals('A'))
         {
         	System.out.println("Welcome! "+username);
-        	AdminHome.adminHome();
+        	admin_home.adminHome();
         }
         else
         {
