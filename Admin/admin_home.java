@@ -1,6 +1,7 @@
 package Admin;
 
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.sql.*;
 
 public class admin_home {
@@ -12,7 +13,7 @@ public class admin_home {
 		adminHome(); //call the Admin's home page
 	}
 	
-	public static void adminHome(Connection conn, int personid){
+	public static void adminHome(Connection conn, int personid) throws InterruptedException{
 		System.out.println("-----Welcome Admin------");
 		System.out.println("1. View own profile");
 		System.out.println("2. Enroll new student");
@@ -46,20 +47,21 @@ public class admin_home {
 			//View
 			break;
 		case 6:
-			System.out.println("in choice 6");
-			
+			//Special permission requests
+			specialEnrollmentReq();
 			break;
 		case 7:
 			System.out.println("in choice 7");
-			
+			//dealing thing
 			break;
 		case 8:
 			System.out.println("in choice 8");
-			
+			//logout
+			System.out.println("Loggin out...");
+			TimeUnit.SECONDS.sleep(3);
 			break;
-		
 		default:
-			
+			//invalid option selected. Throw back to previous menu.
 			break;
 			
 		}
@@ -67,6 +69,14 @@ public class admin_home {
 		
 	}
 	
+	public static void specialEnrollmentReq() {
+		// No input is required here. Directly write the SQL query here and show all the special enrollment request with only status
+		//as "pending". Once all pending requests are displayed on screen. Admin will select which one he wants to approve/Reject
+		//we will increment the counter and then mark the appropriate request with that status.
+		//Please, write the query to display the requests first then we can think of approving/rejecting it.
+		
+	}
+
 	public static void menuViewAddClass() {
 		System.out.println("Select appropriate option");
 		System.out.println("0. Go back to previous menu");
@@ -85,29 +95,54 @@ public class admin_home {
 
 	public static void adminAddClass() {
 		// TODO Auto-generated method stub
-		System.out.println("----Admin Enter Class Page----");
-		//we need class_id entry while creating the class. It will be created in the background 
-		//using sequence and qutomatically placed in the column "class_id" of table class.
-		//Check with Zankruti for more details.
-		System.out.println("Enter course ID (e.g. CSC111) :-> ");
-		String class_id=sc.nextLine();
-		System.out.println("Enter semester (e.g. Fall2016):-> ");
-		System.out.println("Enter faculty name:-> ");
-		System.out.println("Enter Days of the week (e.g. MW) :-> ");
-		System.out.println("Enter Class start time:-> ");
-		System.out.println("Enter Class end time:-> ");
-		System.out.println("Enter Class size:-> ");
-		System.out.println("Enter wait list size:-> ");
-		
-		//if everything successful, press 0 to go back to previous menu, else show the error message
-		//and go back to previous menu.
+				System.out.println("----Admin Enter Class Page----");
+				//we need class_id entry while creating the class. It will be created in the background 
+				//using sequence and qutomatically placed in the column "class_id" of table class.
+				//Check with Zankruti for more details.
+				System.out.println("Enter course ID (e.g. CSC111) :-> ");
+				String course_id=sc.nextLine();
+				System.out.println("Enter semester (e.g. Fall2016):-> ");
+				String sem=sc.nextLine();
+				System.out.println("Enter faculty name:-> ");
+				String fac_name=sc.nextLine();
+				System.out.println("Enter Days of the week (e.g. MW) :-> ");
+				String schedule=sc.nextLine();
+				System.out.println("Enter Class start time:-> ");
+				String s_time=sc.nextLine();
+				System.out.println("Enter Class end time:-> ");
+				String e_time=sc.nextLine();
+				System.out.println("Enter Class size:-> ");
+				int class_size=sc.nextInt();
+				System.out.println("Enter wait list size:-> ");
+				int wait_size=sc.nextInt();
+				//create a query to insert all these data into relevant tables( as discussed yesterday in the morning)
+				//if everything successful, show message of press 0 to go back to previous menu, else show the error message
+				//and go back to previous menu.
+				System.out.println("Class successfully added");
+				System.out.println("Enter 0 to go back to previous menu:-> ");
+				int choice = sc.nextInt();
+				if (choice==0)menuViewAddCourse();
 		
 		
 	}
 
 	public static void adminViewClass() {
-		// TODO Auto-generated method stub
-		
+		// Admin can view Class details. Admin will enter the Course ID and it will display all the classes for that course.
+		System.out.println("Enter the course ID");;
+		String course_id=sc.next();
+		System.out.println("Class ID (can be multiple for single course) :-> ");
+		System.out.println("Semester ");
+		System.out.println("faculty name:-> ");
+		System.out.println("Days of the week (e.g. MW) :-> ");
+		System.out.println("Class start time:-> ");
+		System.out.println("Class end time:-> ");
+		System.out.println("Class size:-> ");
+		System.out.println("Wait list size:-> ");
+	
+		//create a sql query that fecthces all data for that course from classes table and display it on console.
+		System.out.println("Enter 0 to go back to previous menu:-> ");
+		int choice = sc.nextInt();
+		if (choice==0)menuViewAddCourse();
 	}
 
 	public static void viewOwnProfile(){
