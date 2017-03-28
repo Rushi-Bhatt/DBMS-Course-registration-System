@@ -7,11 +7,7 @@ public class admin_home {
 	
 	static Scanner sc=new Scanner(System.in);
 	
-	public static void main(String[] args) {
-		// This is the first method to be called after logged in as Admin.
-		adminHome(); //call the Admin's home page
-	}
-	
+		
 	public static void adminHome(Connection conn, int personid){
 		System.out.println("-----Welcome Admin------");
 		System.out.println("1. View own profile");
