@@ -110,23 +110,6 @@ public class admin_home {
 		
 	}
 
-	public static void viewOwnProfile(){
-		//method to View Admin's own profile.
-		System.out.println("View your own profile");
-		System.out.println("Press 0 to go back");
-		//create a procedure here to fetch admin details from database
-		
-		System.out.println("First Name :-> ");
-		System.out.println("Last Name :-> ");
-		System.out.println("D.O.B. :-> ");
-		System.out.println("Employee ID :-> ");
-		int choice=sc.nextInt();
-		if (choice==0) {
-			
-		}
-		
-	}
-
 	public static void menuViewAddCourse() {
 		// main menu for view/add ccourse
 		System.out.println("Select appropriate option");
@@ -209,30 +192,76 @@ public class admin_home {
 		//After showing all student detail's user can press 0-go back or 1-enter grades.
 	}
 
-	public static void enrollNewStudent() {
-		// Enroll New Student function
-		System.out.println("----Enrolling New Student----");
-		System.out.println("Enter Student ID :--> ");
-		int stud_id=sc.nextInt();
-		System.out.println("Enter Student Name :--> ");
-		String stud_name=sc.nextLine();
-		System.out.println("Enter Student's First Name :--> ");
-		String stud_fname=sc.nextLine();
-		System.out.println("Enter Student's Last Name :--> ");
-		String stud_lname=sc.nextLine();
-		System.out.println("Enter Student's D.O.B (MM-DD-YYYY) :--> ");
-		String dob=sc.nextLine();
-		System.out.println("Enter Student's Level :--> ");
-		String stud_level=sc.nextLine();
-		System.out.println("Enter Student's Residency Status :--> ");
-		String stud_resi_status=sc.nextLine();
-		System.out.println("Enter amound owned (if any) :--> ");
-		float stud_amount=sc.nextFloat();
-		
-		//create a SQL query to enter all these data into the table and get the status if
-		//data was successfully inserted into the table or not. if successful-> display success message
-		//and go back to previous menu, else show error message and go back to previous menu
-		
+	public static void viewOwnProfile(Connection conn,int personid) throws SQLException, ParseException{
+		System.out.println("View your own profile");
+		System.out.println("Press 0 to go back");
+		PreparedStatement stmt = conn.prepareStatement("SELECT FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMP_ID FROM ADMIN WHERE EMP_ID=?");
+		stmt.setInt(1, personid);
+		ResultSet rs = stmt.executeQuery();
+		while(rs.next())
+		{
+			System.out.println("First Name :-> "+rs.getString("FNAME"));
+			System.out.println("Last Name :-> "+rs.getString("LNAME"));
+			System.out.println("D.O.B. :-> "+rs.getString("BIRTH"));
+			System.out.println("Employee ID :-> "+rs.getString("EMP_ID"));
+		}
+		int choice=sc.nextInt();
+		if (choice==0) {
+			adminHome(conn,personid);
+		}
 	}
-
+	
+	public static void enrollNewStudent(Connection conn,int personid){
+		try
+		{
+			System.out.println("----Enrolling New Student----");
+			System.out.println("Enter Student ID :--> ");
+			int stud_id=sc.nextInt();
+			System.out.println("Enter Student's First Name :--> ");
+			String stud_fname=sc.next();
+			System.out.println("Enter Student's Last Name :--> ");
+			String stud_lname=sc.next();
+			System.out.println("Enter Student's D.O.B (dd-MON-yy) :--> ");
+			String dob=sc.next();
+			System.out.println("Enter Student's Email :--> ");
+			String email=sc.next();
+			System.out.println("Enter Student's Address :--> ");
+			String address=sc.next();
+			System.out.println("Enter Student's Level :--> ");
+			String stud_level=sc.next();
+			System.out.println("Enter Student's Residency Status :--> ");
+			String stud_resi_status=sc.next();
+			System.out.println("Enter amound owned (if any) :--> ");
+			float stud_amount=sc.nextFloat();
+			PreparedStatement stmt = conn.prepareStatement("SELECT STUDENT_SPECIAL_ID FROM STUDENT_SPECIAL WHERE LVL=? AND RESIDENCY=?");
+			stmt.setString(1, stud_level);
+			stmt.setString(2, stud_resi_status);
+			ResultSet rs = stmt.executeQuery();
+			int special_id=0;
+			while(rs.next())
+			{
+				special_id = rs.getInt("STUDENT_SPECIAL_ID");
+			}
+			stmt = conn.prepareStatement("INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yy'),?,?,?)");
+			stmt.setInt(1, stud_id);
+			stmt.setString(2,stud_fname);
+			stmt.setString(3,stud_lname);
+			stmt.setString(4,dob);
+			stmt.setString(5,email);
+			stmt.setString(6,address);
+			stmt.setInt(7, special_id);
+			stmt.executeUpdate();
+			
+			stmt = conn.prepareStatement("INSERT INTO ACCOUNT(BILL_ID,BILLAMOUNT,SID) VALUES(ACCOUNT_SEQ.NEXTVAL,?,?)");
+			stmt.setInt(2, stud_id);
+			stmt.setFloat(1,stud_amount);
+			stmt.executeUpdate();
+			
+			System.out.println("Student enrolled successfully");
+			adminHome(conn,personid);
+		}catch(Exception ex)
+		{
+			System.out.println("Student Not enrolled: "+ex);
+		}
+	}
 }
