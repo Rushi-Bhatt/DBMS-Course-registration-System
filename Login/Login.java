@@ -41,22 +41,23 @@ public class Login {
 		stmt.setString(1, user);
 		ResultSet rs = stmt.executeQuery();
 		if (!rs.next()) {
-			System.out.printf("User not found. Please Enter correct credentials.\n");
+			System.out.printf("Login Incorrect.\n");
 			return false;
 		}
 		String data_pwd = rs.getString("PASSWORD");
         String role = rs.getString("ROLE");
+        System.out.println("Value of role is"+role);
         String username = rs.getString("USERNAME");
         int personid = rs.getInt("PERSON_ID");
         if (!pwd.equals(data_pwd)) 
         {
-            System.out.println("Password Does not match. Please Enter correct credentials");
+            System.out.println("Login Incorrect.");
             return false;
         }
-        if(role.equals('A'))
+        if(role.equals("A"))
         {
-        	System.out.println("Welcome! "+username);
-        	AdminHome.adminHome();
+        	System.out.println("Welcome! Here "+username);
+        	AdminHome.adminHome(conn,personid);
         }
         else
         {
