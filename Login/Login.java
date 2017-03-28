@@ -3,6 +3,7 @@ package Login;
 import java.sql.*;
 import java.util.Scanner;
 import Admin.*;
+import Connection.*;
 
 
 public class Login {
@@ -28,6 +29,10 @@ public class Login {
 			}
 			else
 			{
+				if(select !=2){
+					System.out.println("Enter a valid number");
+					loginmenu();
+				}
 				System.exit(0);
 			}
 		}
@@ -60,7 +65,7 @@ public class Login {
         if(role.equals("A"))
         {
         	System.out.println("Welcome! Here "+username);
-        	AdminHome.adminHome(conn,personid);
+        	admin_home.adminHome(conn,personid);
         }
         else
         {

@@ -1,6 +1,8 @@
 package Admin;
 
 import java.util.Scanner;
+import java.sql.*;
+import Connection.*;
 
 public class admin_home {
 	
@@ -11,7 +13,7 @@ public class admin_home {
 		adminHome(); //call the Admin's home page
 	}
 	
-	public static void adminHome(){
+	public static void adminHome(Connection conn, int personid){
 		System.out.println("-----Welcome Admin------");
 		System.out.println("1. View own profile");
 		System.out.println("2. Enroll new student");
