@@ -7,7 +7,7 @@ import java.sql.*;
 
 public class admin_home {
 	
-	static Scanner sc = new Scanner(System.in);
+	static Scanner sc = new Scanner(System.in).useDelimiter("\\n");
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
@@ -102,7 +102,7 @@ public class admin_home {
 			String stud_fname = sc.next();
 			System.out.println("Enter Student's Last Name :--> ");
 			String stud_lname = sc.next();
-			System.out.println("Enter Student's D.O.B (dd-MON-yy) :--> ");
+			System.out.println("Enter Student's D.O.B (dd-MON-yyyy) :--> ");
 			String dob = sc.next();
 			System.out.println("Enter Student's Email :--> ");
 			String email = sc.next();
@@ -124,7 +124,7 @@ public class admin_home {
 				special_id = rs.getInt("STUDENT_SPECIAL_ID");
 			}
 			stmt = conn.prepareStatement(
-					"INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yy'),?,?,?)");
+					"INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yyyy'),?,?,?)");
 			stmt.setInt(1, stud_id);
 			stmt.setString(2, stud_fname);
 			stmt.setString(3, stud_lname);
@@ -299,10 +299,23 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	try{
 		System.out.println("Enter the course ID:--> ");
 		String course_id = sc.next();
-	
-	PreparedStatement stmt = conn.prepareStatement("SELECT * FROM COURSE WHERE CID=?");
-	stmt.setString(1, course_id);
-	ResultSet rs = stmt.executeQuery();
+		
+		PreparedStatement stmt = conn.prepareStatement("SELECT LISTAGG(PRE_REQ_COURSES,',') WITHIN GROUP (ORDER BY CID) AS PREREQ FROM PRE_REQ WHERE CID=?");
+		stmt.setString(1, course_id);
+		ResultSet rs = stmt.executeQuery();
+		String prereq="";
+		if (rs.next()) {
+			do{
+				prereq = rs.getString("PREREQ");
+			}while(rs.next());
+		}
+		stmt = conn.prepareStatement("SELECT CID,TITLE,DID,SP_PERMISSION,LVL,MIN_CREDIT,MAX_CREDIT,GPA_REQ FROM COURSE WHERE CID=?");
+		stmt.setString(1, course_id);
+		rs = stmt.executeQuery();
+		
+		stmt = conn.prepareStatement("SELECT * FROM COURSE WHERE CID=?");
+		stmt.setString(1, course_id);
+		rs = stmt.executeQuery();
 	//create a SQL query to fetch the course related data from database
 	//and display all fields.Take care while printing credits of course. If course
 	//has credit range display in the form of range else as single credit.
