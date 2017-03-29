@@ -301,7 +301,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	try{
 		System.out.println("Enter the course ID:--> ");
 		String course_id = sc.next();
-		
+		System.out.println("here");
 		PreparedStatement stmt = conn.prepareStatement("SELECT LISTAGG(PRE_REQ_COURSES,',') WITHIN GROUP (ORDER BY CID) AS PREREQ FROM PRE_REQ WHERE CID=?");
 		stmt.setString(1, course_id);
 		ResultSet rs = stmt.executeQuery();
@@ -315,7 +315,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		stmt.setString(1, course_id);
 		rs = stmt.executeQuery();
 		
-		stmt = conn.prepareStatement("SELECT * FROM COURSE WHERE CID=?");
+		stmt = conn.prepareStatement("SELECT CID,TITLE,DID,SP_PERMISSION,LVL,MIN_CREDIT,MAX_CREDIT,GPA_REQ FROM COURSE WHERE CID=?");
 		stmt.setString(1, course_id);
 		rs = stmt.executeQuery();
 	//create a SQL query to fetch the course related data from database
@@ -326,7 +326,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("TITLE: " +  rs.getString("TITLE"));
 		System.out.println("DID: " +  rs.getInt("DID"));
 		System.out.println("SP_PERMISSION: " +  rs.getInt("SP_PERMISSION"));
-		System.out.println("PRE_REQ: " +  rs.getInt("PRE_REQ"));
+		System.out.println("PRE_REQ: " +  prereq);
 		System.out.println("LVL: " +  rs.getString("LVL"));
 		System.out.println("MIN_CREDIT: " +  rs.getInt("MIN_CREDIT"));
 		System.out.println("MAX_CREDIT: " +  rs.getInt("MAX_CREDIT"));
