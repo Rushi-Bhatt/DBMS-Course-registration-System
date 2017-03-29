@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Heema/Desktop/NCSU/Sem2/DBMS/Project/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="/Users/zankrutidesai/Desktop/DBMSproject/DBMS-Course-registration-System/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="/Users/zankrutidesai/.p2/pool/plugins/oracle.database.driver.11_16.3.0.201612160743/ojdbc6.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
