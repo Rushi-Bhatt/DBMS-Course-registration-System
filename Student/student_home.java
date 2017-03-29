@@ -282,6 +282,11 @@ public class student_home {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	
+	public static void dropCourse(Connection conn, int personid){
+		
+	}
 
 
 }
