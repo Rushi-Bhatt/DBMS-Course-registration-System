@@ -57,7 +57,7 @@ public class student_home {
 			editOwnProfile(conn,personid);
 			break;
 		case 3:
-			//View all available courses
+			//View all available courses, irrespective of whether they are full/not
 			viewAllCourses(conn,personid);
 			break;
 		case 4:
@@ -70,8 +70,8 @@ public class student_home {
 			//View
 			break;
 		case 6:
-			//View all my courses
-		
+			//View my courses from enrollment table
+			viewMyCourses(conn,personid);
 			break;
 		case 7:
 			//View grades
@@ -236,7 +236,52 @@ public class student_home {
 	}
 	public static void viewAllCourses(Connection conn, int personid) {
 		// Show all courses for current semester.
+		try {
+			System.out.println("All Available Courses for this semester:");
+			//Get current semester from global_var table
+			PreparedStatement stmt1 = conn.prepareStatement("SELECT SEMESTER FROM GLOBAL_VAR");
+			ResultSet rs1 = stmt1.executeQuery();
+			while(rs1.next()){
+				String semester = rs1.getString("SEMESTER");
+				System.out.println("Available courses for "+semester);
+				//Get all the details from class table
+				PreparedStatement stmt = conn.prepareStatement(
+				"SELECT  CLASS_ID,CID,FAC_NAME,DAYS,START_TIME,END_TIME FROM CLASS WHERE SEMESTER=?");
+				stmt.setString(1, semester);
+				ResultSet rs = stmt.executeQuery();
+				while (rs.next()) {
+					System.out.print("Class ID :-> " + rs.getInt("CLASS_ID"));
+					String course_id = rs.getString("CID");
+					System.out.print(",  Course ID :-> " + course_id);
+					
+					//Get course title from CID
+					PreparedStatement stmt2 = conn.prepareStatement(
+					"SELECT  TITLE FROM COURSE WHERE CID = ?");
+					stmt2.setString(1, course_id);
+					ResultSet rs2 = stmt2.executeQuery();
+					while(rs2.next()){
+						System.out.print(",  Course Title :-> " + rs2.getString("TITLE"));
+					}
+					
+					System.out.print(",  Faculty name :-> " + rs.getString("FAC_NAME"));
+					System.out.print(",  Days :-> " + rs.getString("DAYS"));
+					System.out.print(",  Time :-> " + rs.getString("START_TIME")+" -- "+rs.getString("END_TIME"));
+					
+				}
+			}
+			int choice = sc.nextInt();
+			if (choice == 0) {
+				studentHome(conn, personid);
+			}
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
+	}
+	
+	public static void viewMyCourses(Connection conn, int personid) {
+		// TODO Auto-generated method stub
 		
 	}
+
 
 }
