@@ -16,8 +16,6 @@ public class Login {
 		
 		Connection conn = DBConnection.ConnectDB();
 		Scanner scan = new Scanner(System.in);
-		while(true)
-		{
 			System.out.println("---------Student Registration---------");
 			System.out.println("1. Login");
 			System.out.println("2. Exit");
@@ -35,10 +33,9 @@ public class Login {
 				}
 				System.exit(0);
 			}
-		}
 	}
 	
-	public static boolean userCheck(Connection conn)throws Exception
+	public static void userCheck(Connection conn)throws Exception
 	{
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Enter Username");
@@ -50,7 +47,7 @@ public class Login {
 		ResultSet rs = stmt.executeQuery();
 		if (!rs.next()) {
 			System.out.printf("Login Incorrect.\n");
-			return false;
+			loginmenu();
 		}
 		String data_pwd = rs.getString("PASSWORD");
         String role = rs.getString("ROLE");
@@ -60,7 +57,7 @@ public class Login {
         if (!pwd.equals(data_pwd)) 
         {
             System.out.println("Login Incorrect.");
-            return false;
+            loginmenu();
         }
         if(role.equals("A"))
         {
@@ -71,6 +68,5 @@ public class Login {
         {
         	System.out.println("Welcome! "+username);
         }
-        return true;
 	}
 }
