@@ -2,6 +2,8 @@ package Login;
 
 import java.sql.*;
 import java.util.Scanner;
+
+import Student.student_home;
 import Admin.*;
 import Connection.*;
 
@@ -46,7 +48,7 @@ public class Login {
 		stmt.setString(1, user);
 		ResultSet rs = stmt.executeQuery();
 		if (!rs.next()) {
-			System.out.printf("Login Incorrect.\n");
+			System.out.println("Login Incorrect.\n");
 			loginmenu();
 		}
 		String data_pwd = rs.getString("PASSWORD");
@@ -67,6 +69,7 @@ public class Login {
         else
         {
         	System.out.println("Welcome! "+username);
+        	student_home.studentHome(conn, personid);
         }
 	}
 }

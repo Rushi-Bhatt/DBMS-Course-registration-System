@@ -1,6 +1,8 @@
 package Student;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 public class student_home {
 
-	static Scanner sc=new Scanner(System.in).useDelimiter("\\n");
+	static Scanner sc=new Scanner(System.in);
 	
 	public static void studentHome(Connection conn, int personid) throws InterruptedException {
 		System.out.println("-----Welcome Student------");
@@ -60,7 +62,7 @@ public class student_home {
 			break;
 		case 4:
 			//Enroll courses
-			enrollCourse(conn,personid);
+			//enrollCourse(conn,personid);
 			break;
 		case 5:
 			//Drop course
@@ -93,13 +95,104 @@ public class student_home {
 
 	public static void viewOwnProfile(Connection conn, int personid) {
 		// TODO Auto-generated method stub
-		
+		try {
+			System.out.println("View your own profile");
+			System.out.println("Press 0 to go back");
+			PreparedStatement stmt = conn.prepareStatement(
+					"SELECT  SID,FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMAIL,PHONE,ADDRESS,STUDENT_SPECIAL_ID FROM STUDENT WHERE SID=?");
+			stmt.setInt(1, personid);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				System.out.println("Student ID :-> " + rs.getInt("SID"));
+				System.out.println("First Name :-> " + rs.getString("FNAME"));
+				System.out.println("Last Name :-> " + rs.getString("LNAME"));
+				System.out.println("D.O.B. :-> " + rs.getString("BIRTH"));
+				System.out.println("EMail id :-> " + rs.getString("EMAIL"));
+				System.out.println("Phone :-> " + rs.getString("PHONE"));
+				System.out.println("Address :-> " + rs.getString("ADDRESS"));
+				
+				//to print level and residency from student_special_id
+				PreparedStatement stmt1 = conn.prepareStatement(
+				"SELECT  LVL,RESIDENCY FROM STUDENT_SPECIAL WHERE STUDENT_SPECIAL_ID=?");
+				stmt1.setInt(1, rs.getInt("STUDENT_SPECIAL_ID")); //get student special id from earlier query
+				ResultSet rs1 = stmt1.executeQuery();
+				while (rs1.next()) {
+					System.out.println("Level:-> " + rs1.getString("LVL"));
+					System.out.println("Residency :-> " + rs1.getString("RESIDENCY"));
+				}
+			}
+			int choice = sc.nextInt();
+			if (choice == 0) {
+				studentHome(conn, personid);
+			}
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
 	}
 	
 	public static void editOwnProfile(Connection conn, int personid) {
 		// TODO Auto-generated method stub
-		
-		
+		//
+		try {
+			System.out.println("Your profile Information");
+			PreparedStatement stmt = conn.prepareStatement(
+					"SELECT  FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMAIL,PHONE,ADDRESS FROM STUDENT WHERE SID=?");
+			stmt.setInt(1, personid);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				System.out.println("1.First Name :-> " + rs.getString("FNAME"));
+				System.out.println("2.Last Name :-> " + rs.getString("LNAME"));
+				System.out.println("3.D.O.B. :-> " + rs.getString("BIRTH"));
+				System.out.println("4.EMail id :-> " + rs.getString("EMAIL"));
+				System.out.println("5.Phone :-> " + rs.getString("PHONE"));
+				System.out.println("6.Address :-> " + rs.getString("ADDRESS"));	
+			}
+			System.out.println("Enter your selection to edit(Press 0 to go back): -->");
+			int choice = sc.nextInt();
+			switch(choice){
+				case 0: 
+					studentHome(conn, personid);
+					break;
+				
+				case 1://edit first name
+					System.out.println("Enter new First name: --> ");
+					String fname = sc.next();
+					stmt = conn.prepareStatement(
+					"UPDATE STUDENT SET FNAME = ? WHERE SID=?");
+					stmt.setString(1, fname);
+					stmt.setInt(2, personid);
+					stmt.executeUpdate();
+					System.out.println("First name edited successfully");
+					editOwnProfile(conn, personid);
+					break;
+					
+				case 2://edit Last name
+					System.out.println("Enter new Last name: --> ");
+					String lname = sc.next();
+					stmt = conn.prepareStatement(
+					"UPDATE STUDENT SET LNAME = ? WHERE SID=?");
+					stmt.setString(1, lname);
+					stmt.setInt(2, personid);
+					stmt.executeUpdate();
+					System.out.println("Last name edited successfully");
+					editOwnProfile(conn, personid);
+					break;
+					
+				case 3://edit D.O.B name
+					System.out.println("Enter new D.O.B(dd-MON-yyyy): --> ");
+					String dob = sc.next();
+					stmt = conn.prepareStatement(
+					"UPDATE STUDENT SET DOB = ? WHERE SID=?");
+					stmt.setString(1, dob);
+					stmt.setInt(2, personid);
+					stmt.executeUpdate();
+					System.out.println("Date of birth edited successfully");
+					editOwnProfile(conn, personid);
+					break;
+			}
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
 	}
 	public static void viewAllCourses(Connection conn, int personid) {
 		// Show all courses for current semester.

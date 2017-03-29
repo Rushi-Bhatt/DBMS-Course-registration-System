@@ -274,10 +274,10 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	stmt.executeUpdate();
 
 	String[] prereq = pre_req_courses.split(",");
-	for(String item : prereq){
+	for(int i=0;i<prereq.length;i++){
 		PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
 		stmt2.setString(1,course_id);
-		stmt2.setString(2, item);
+		stmt2.setString(2, prereq[i]);
 		stmt2.executeQuery();
 	}
 	
