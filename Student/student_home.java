@@ -178,7 +178,7 @@ public class student_home {
 					editOwnProfile(conn, personid);
 					break;
 					
-				case 3://edit D.O.B name
+				case 3://edit D.O.B
 					System.out.println("Enter new D.O.B(dd-MON-yyyy): --> ");
 					String dob = sc.next();
 					stmt = conn.prepareStatement(
@@ -189,6 +189,46 @@ public class student_home {
 					System.out.println("Date of birth edited successfully");
 					editOwnProfile(conn, personid);
 					break;
+					
+				case 4://edit Email
+					System.out.println("Enter new email address: --> ");
+					String email = sc.next();
+					stmt = conn.prepareStatement(
+					"UPDATE STUDENT SET EMAIL = ? WHERE SID=?");
+					stmt.setString(1, email);
+					stmt.setInt(2, personid);
+					stmt.executeUpdate();
+					System.out.println("Email address edited successfully");
+					editOwnProfile(conn, personid);
+					break;
+					
+				case 5://edit Phone
+					System.out.println("Enter new Phone number: --> ");
+					long phone = sc.nextLong();
+					stmt = conn.prepareStatement(
+					"UPDATE STUDENT SET PHONE = ? WHERE SID=?");
+					stmt.setLong(1, phone);
+					stmt.setInt(2, personid);
+					stmt.executeUpdate();
+					System.out.println("Phone number edited successfully");
+					editOwnProfile(conn, personid);
+					break;
+				
+				case 6://edit Address
+					System.out.println("Enter new Address: --> ");
+					String address = sc.next();
+					stmt = conn.prepareStatement(
+					"UPDATE STUDENT SET ADDRESS = ? WHERE SID=?");
+					stmt.setString(1, address);
+					stmt.setInt(2, personid);
+					stmt.executeUpdate();
+					System.out.println("Address edited successfully");
+					editOwnProfile(conn, personid);
+					break;
+				
+				default:
+					// invalid option selected. Throw back to previous menu.
+					break;		
 			}
 		} catch (Exception ex) {
 			System.out.println(ex);
