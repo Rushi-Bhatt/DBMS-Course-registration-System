@@ -89,8 +89,7 @@ public class student_home {
 			break;
 		case 8:
 			//View/Pay bill
-			System.out.println("Loggin out...");
-			TimeUnit.SECONDS.sleep(3);
+			handleBilling(conn,personid);
 			break;
 		case 9:
 			//Logout
@@ -103,6 +102,7 @@ public class student_home {
 		}
 	}
 
+	
 	public static void viewOwnProfile(Connection conn, int personid) {
 		// TODO Auto-generated method stub
 		try {
@@ -433,6 +433,59 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 		//Take course_ID and with that find 
 		
 		
+	}
+	
+	private static void handleBilling(Connection conn, int personid) {
+		// show options for view bill and pay bill 
+		try {
+				//Get current semester from global_var table
+				PreparedStatement stmt = conn.prepareStatement("SELECT BILL_ID,BILLAMOUNT FROM ACCOUNT WHERE SID=?");
+				stmt.setInt(1, personid);
+				ResultSet rs = stmt.executeQuery();
+				int billamount = 0;
+				while(rs.next()){ //for each bill of student
+					//show the total bill by adding the individual bills of student
+					billamount += rs.getInt("BILLAMOUNT");  
+				}//closing for rs
+				System.out.println("Your pending bill amount is:"+billamount);
+				if(billamount>0){
+					System.out.println("Press 1 to Pay the bill,  Press 0 to go back to Previous Menu");
+				}else{
+					System.out.println("Press 0 to go back to Previous Menu");
+				}
+				int choice = sc.nextInt();
+				if (choice == 0) 
+				{
+					studentHome(conn, personid);
+				}
+				else if(choice == 1)
+				{
+					if(billamount>0){
+						//pay the bill 
+						//by creating new entry with the negative amount, should not be greater than the 
+						//pending amount though, else show validation there.
+						System.out.println("Enter the amount you would like to pay: ");
+						float amount = sc.nextFloat();
+						if(amount>billamount){
+							System.out.println("Your due amount is "+billamount+"So enter any value less than that");
+							handleBilling(conn,personid);
+						}
+						stmt = conn.prepareStatement("INSERT INTO ACCOUNT(BILL_ID,BILLAMOUNT,SID) VALUES(ACCOUNT_SEQ.NEXTVAL,?,?)");
+						stmt.setFloat(1, (amount* -1));
+						stmt.setInt(2, personid);
+						stmt.executeUpdate();
+						System.out.println("Bill Paid Successfully...!");
+						handleBilling(conn,personid);
+					}
+					else{
+						System.out.println("Invalid Choice");
+						studentHome(conn, personid);
+					}
+				}	
+			} //closing for try
+		catch (Exception ex) {
+			System.out.println(ex);
+		}
 	}
 
 
