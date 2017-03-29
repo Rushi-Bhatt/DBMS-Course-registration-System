@@ -280,7 +280,59 @@ public class student_home {
 	
 	public static void viewMyCourses(Connection conn, int personid) {
 		// TODO Auto-generated method stub
-		
+		//view courses from enrollment for current semester
+		try {
+			//Get current semester from global_var table
+			PreparedStatement stmt = conn.prepareStatement("SELECT SEMESTER FROM GLOBAL_VAR");
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){ //for each semester
+				String semester = rs.getString("SEMESTER");
+				System.out.println("My courses for "+semester);
+				
+				//Get all the details from enrollment table
+				PreparedStatement stmt1 = conn.prepareStatement(
+				"SELECT  CLASS_ID,STATUS FROM ENROLLMENT WHERE SID = ? AND SEMESTER = ?");
+				stmt1.setInt(1, personid);
+				stmt1.setString(2, semester);
+				ResultSet rs1 = stmt1.executeQuery();
+				while (rs1.next()) { //for each classid of enrollment
+					System.out.print("Class ID :-> " + rs1.getInt("CLASS_ID"));
+					System.out.print(",  Status :-> " + rs1.getString("STATUS"));
+					
+					//get all the details from class id using the class table
+					PreparedStatement stmt2 = conn.prepareStatement(
+					"SELECT  CID,FAC_NAME,DAYS,START_TIME,END_TIME FROM CLASS WHERE CLASS_ID=?");
+					stmt2.setInt(1, rs1.getInt("CLASS_ID"));
+					ResultSet rs2 = stmt2.executeQuery();
+					
+					while (rs2.next()) { //for each classid entry of class table
+						//Get CID from classid
+						String course_id = rs2.getString("CID");
+						System.out.print(",  Course ID :-> " + course_id);
+						
+						//Get course title from CID
+						PreparedStatement stmt3 = conn.prepareStatement(
+						"SELECT  TITLE FROM COURSE WHERE CID = ?");
+						stmt3.setString(1, course_id);
+						ResultSet rs3 = stmt3.executeQuery();
+						while(rs3.next()){
+							System.out.print(",  Course Title :-> " + rs3.getString("TITLE"));
+						} ///closing for rs3
+	
+						System.out.print(",  Faculty name :-> " + rs2.getString("FAC_NAME"));
+						System.out.print(",  Days :-> " + rs2.getString("DAYS"));
+						System.out.println(",  Time :-> " + rs2.getString("START_TIME")+" -- "+rs2.getString("END_TIME"));		
+					} //closing for rs2	
+				} //closing for rs1
+			}//closing for rs
+			int choice = sc.nextInt();
+			if (choice == 0) {
+				studentHome(conn, personid);
+			}
+		} //closing for try
+		catch (Exception ex) {
+			System.out.println(ex);
+		}
 	}
 
 
