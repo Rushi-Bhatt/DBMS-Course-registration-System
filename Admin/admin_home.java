@@ -4,6 +4,8 @@ import java.util.Scanner;
 import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 import java.util.concurrent.TimeUnit;
 import java.sql.*;
+import Connection.*;
+import java.util.*;
 
 public class admin_home {
 	
@@ -47,7 +49,7 @@ public class admin_home {
 				specialEnrollmentReq();
 				break;
 			case 7:
-				System.out.println("in choice 7");
+				enforceDeadline(conn, personid);
 				// dealing thing
 				break;
 			case 8:
@@ -461,5 +463,33 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("Press course number to add grades");
 	}
 
-	
+
+	public static void enforceDeadline(Connection conn, int personid) throws SQLException{
+		System.out.println("Do you want to enforce deadline?(Y/N): ");
+		try{
+			String input = sc.next();
+			if(input.toLowerCase().equals("y")){
+			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = ?");
+			st.setInt(1, 1);
+			st.executeUpdate();
+			System.out.println("Successfully enforced the deadline.");
+			System.out.println("Enter 0 to go back to previous menu:-> ");
+			int choice = sc.nextInt();
+			if (choice == 0);
+				adminHome(conn, personid);
+		}
+		else{
+			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = 0");
+			st.executeUpdate();		
+			System.out.println("Removed the deadline.");
+			System.out.println("Enter 0 to go back to previous menu:-> ");
+			int choice = sc.nextInt();
+			if (choice == 0)
+				adminHome(conn, personid);
+		}
+	}
+	catch(Exception ex){
+		System.out.println("Couldn't perform the action. Error: " + ex);
+	}
+	}
 }
