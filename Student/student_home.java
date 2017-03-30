@@ -85,7 +85,7 @@ public class student_home {
 			break;
 		case 7:
 			//View grades
-			
+			viewGrades(conn,personid);
 			break;
 		case 8:
 			//View/Pay bill
@@ -102,7 +102,6 @@ public class student_home {
 		}
 	}
 
-	
 	public static void viewOwnProfile(Connection conn, int personid) {
 		// TODO Auto-generated method stub
 		try {
@@ -435,7 +434,7 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 		
 	}
 	
-	private static void handleBilling(Connection conn, int personid) {
+	public static void handleBilling(Connection conn, int personid) {
 		// show options for view bill and pay bill 
 		try {
 				//Get current semester from global_var table
@@ -487,7 +486,77 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 			System.out.println(ex);
 		}
 	}
-
-
-
-}
+	
+	public static void viewGrades(Connection conn, int personid) {
+		// TODO Auto-generated method stub
+		//view letter grades and GPA of the student from enrollment and student table respectively
+		try {
+			//Get current semester from global_var table
+			System.out.println("Select which grades do you want to see: ");
+			System.out.println("1.View Letter grades");
+			System.out.println("2.View GPA");
+			System.out.println("Press 0 to go back to previous menu");
+			int choice = sc.nextInt();
+			if (choice == 0) 
+			{
+				studentHome(conn, personid);
+			}
+			else if(choice==1){
+				//View letter grades
+				PreparedStatement stmt = conn.prepareStatement("SELECT CLASS_ID,SEMESTER,GRADE FROM ENROLLMENT WHERE SID=? ORDER BY SEMESTER");
+				stmt.setInt(1, personid);
+				ResultSet rs = stmt.executeQuery();
+				while(rs.next()){ //for each classid
+					//show the details using the individual class id
+					int classid = rs.getInt("CLASS_ID");
+					
+					//get all the details from class id using the class table
+					PreparedStatement stmt2 = conn.prepareStatement(
+					"SELECT  CID,FAC_NAME FROM CLASS WHERE CLASS_ID=?");
+					stmt2.setInt(1, classid);
+					ResultSet rs2 = stmt2.executeQuery();
+					while (rs2.next()) { //for each classid entry of class table
+						//Get CID from classid
+						String course_id = rs2.getString("CID");
+						System.out.print("Course ID :-> " + course_id);
+						
+						//Get course title from CID
+						PreparedStatement stmt3 = conn.prepareStatement(
+						"SELECT  TITLE FROM COURSE WHERE CID = ?");
+						stmt3.setString(1, course_id);
+						ResultSet rs3 = stmt3.executeQuery();
+						while(rs3.next()){
+							System.out.print("|  Course Title :-> " + rs3.getString("TITLE"));
+						} ///closing for rs3
+						
+						System.out.print("|  Grade :->"+rs.getString("GRADE"));
+						System.out.println("|  Semester :->"+rs.getString("SEMESTER"));
+						System.out.println("-------------------------------------------------------------------------------------------");
+					}//closing for rs2
+				}///closing for rs
+				viewGrades(conn,personid);
+			} //closing for if choice==1
+			else if(choice==2){
+				///view GPA
+				PreparedStatement stmt4 = conn.prepareStatement(
+				"SELECT GPA FROM STUDENT WHERE SID=?");
+				stmt4.setInt(1, personid);
+				ResultSet rs4 = stmt4.executeQuery();
+				while (rs4.next()) {
+					System.out.println("GPA :->"+rs4.getFloat("GPA"));
+					System.out.println("-------------------------------------------------------------------------------------------");					
+				}//closing of rs4
+				viewGrades(conn,personid);
+			}//closing for if choice==2
+			else
+			{
+				System.out.println("Enter Valid Choice..");
+				viewGrades(conn,personid);
+			}
+				
+		} //closing for try
+		catch (Exception ex) {
+			System.out.println(ex);
+		}
+	}//closing of viewGrades
+} //closing of class
