@@ -75,8 +75,9 @@ public class student_home {
 			if(deadline_enforced==0)enrollCourse(conn,personid);
 			break;
 		case 5:
-			if(deadline_enforced==0)dropCourse(conn,personid);
-		
+			//Drop course
+			if(deadline_enforced==0)
+				dropCourse(conn,personid);
 			//View
 			break;
 		case 6:
@@ -93,7 +94,7 @@ public class student_home {
 			break;
 		case 9:
 			//Logout
-			
+			System.exit(0);
 			break;
 		default:
 			//invalid option selected. Throw back to previous menu.
@@ -178,8 +179,7 @@ public class student_home {
 				case 2://edit Last name
 					System.out.println("Enter new Last name: --> ");
 					String lname = sc.next();
-					stmt = conn.prepareStatement(
-					"UPDATE STUDENT SET LNAME = ? WHERE SID=?");
+					stmt = conn.prepareStatement("UPDATE STUDENT SET LNAME = ? WHERE SID=?");
 					stmt.setString(1, lname);
 					stmt.setInt(2, personid);
 					stmt.executeUpdate();
@@ -287,7 +287,7 @@ public class student_home {
 			System.out.println(ex);
 		}
 	}
-public static void enrollCourse(Connection conn, int personid) throws SQLException {
+public static void enrollCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 		
 		//get current semester
 		PreparedStatement globl_stmt = conn.prepareStatement(
@@ -347,25 +347,67 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 		
 		//Code to get all credits currently student has enrolled for
 		//Got to enrollment table : Current sem+SID+Status(except rejected)
-		PreparedStatement enroll_table_stmt = conn.prepareStatement(
-				"SELECT CLASS_ID "
-				+ "FROM ENROLLMENT "
-				+ "WHERE SID = ? AND STATUS <> ? AND SEMESTER = ?"+"");
-		enroll_table_stmt.setInt(1, personid);
-		enroll_table_stmt.setString(2, "Rejected");
-		enroll_table_stmt.setString(3, sem);
-		ResultSet enroll_table = enroll_table_stmt.executeQuery();
-//		SELECT SUM(MAX_CREDIT) 
-//		FROM COURSE CO,CLASS CL,ENROLLMENT ENR
-//		WHERE CO.CID = CL.CID AND CL.CLASS_ID = ENR.CLASS_ID 
-//		AND SID = 200152899 AND STATUS NOT IN(‘REJECTED’) AND SEMESTER = FALL2017
-		//from this class_ID get credits from course tables;
-//		float total_enrolled_credit=0;
-//		while(enroll_table.next()){
-//			total_enrolled_credit+=enroll_table.getFloat("MAX_CREDIT");
+		PreparedStatement credit_stmt = conn.prepareStatement("SELECT SUM(MAX_CREDIT) AS TOTAL_CREDIT FROM COURSE,CLASS,ENROLLMENT"
+    			+ "  WHERE COURSE.CID = CLASS.CID AND CLASS.CLASS_ID=ENROLLMENT.CLASS_ID"
+    			+ "  AND STATUS NOT IN ('REJECTED') AND ENROLLMENT.SID=? GROUP BY ENROLLMENT.SID");
+		credit_stmt.setInt(1, personid);
+		ResultSet max_credit_enroll = credit_stmt.executeQuery();
+		
+		int max_credit_limit1=0;
+		while(max_credit_enroll.next()){
+			System.out.println("Answer is "+max_credit_enroll.getInt("TOTAL_CREDIT"));
+			max_credit_limit1=max_credit_enroll.getInt("TOTAL_CREDIT");
+		}
+//		if(max_credit_limit1>max_credit_limit){
+//			System.out.println("You have already enrolled for maximum credits. Can't add this cout");
+//			System.out.println("Redirecting back to home page...");
+//			TimeUnit.SECONDS.sleep(3);
+//			studentHome(conn, personid);
 //		}
-		//System.out.println("Max credits enrolled so far is"+total_enrolled_credit);
+		//End of condition checking : max_credit_enrolled>max_credit_allowed
+		
+		//Start of condition checking : Class capacity is full or not
+		PreparedStatement capacity_stmt = conn.prepareStatement("SELECT CAPACITY FROM CLASS WHERE CLASS_ID =?");
+		capacity_stmt.setInt(1,class_id);
+		ResultSet max_class_capacity = capacity_stmt.executeQuery();
+		int max_capacity=0;
+		while(max_class_capacity.next()){
+			max_capacity=max_class_capacity.getInt("CAPACITY");
+		}
+		System.out.println("Maximum class capacity is :->"+max_capacity);
+		if(max_capacity<=0){
+			System.out.println("Class is already full. Would you like to be placed on waitlist (Y/N)?:->");
+		}
+		String wait_list_choice=sc.next();
+		if(wait_list_choice.equals("Y")){
+			System.out.println("Logic to place on waitlist");
+		}else{
+			System.out.println("waitlist not needed. going back to previus menu");
+			studentHome(conn, personid);
+		}
+		//end of condition checking : Class capacity is full or not
+		
+		
+		//Start of pre-req checking : pre-reqs met or not
+		//1. course ID from class
+		//2. person_id
+		PreparedStatement pre_req_stmt = conn.prepareStatement("SELECT "
+    			+ "(SELECT COUNT(*) FROM PRE_REQ WHERE CID=?) - "
+    			+ "(SELECT COUNT(*) FROM ENROLLMENT,CLASS,COURSE WHERE COURSE.CID=CLASS.CID AND CLASS.CLASS_ID = ENROLLMENT.CLASS_ID  AND ENROLLMENT.SID=?"
+    			+ "AND ENROLLMENT.STATUS IN 'Enrolled' AND SEMESTER NOT IN (?) AND COURSE.CID IN "
+    			+ "(SELECT PRE_REQ_COURSES FROM PRE_REQ WHERE CID=?)) AS TOTAL_COUNT FROM dual;");
+		pre_req_stmt.setString(1,course_id);
+		pre_req_stmt.setInt(2,personid);
+		pre_req_stmt.setString(3,sem);
+		pre_req_stmt.setString(4,sem);
+		pre_req_stmt.setString(1,course_id);
+		ResultSet pre_req_rs = pre_req_stmt.executeQuery();
+		boolean pre_req_met=pre_req_rs.getInt("TOTAL_COUNT")>0?false:true;
+		if(pre_req_met)System.out.println(" Met");
+		else System.out.println("Not met");
+		//end of pre-req checking : pre-reqs met or not
 	}
+
 
 	
 	public static void viewMyCourses(Connection conn, int personid) {
@@ -426,11 +468,183 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 			System.out.println(ex);
 		}
 	}
-	public static void dropCourse(Connection conn, int personid) {
-		// Enroll for the course.
-		//First, check if th dead_line is enforced or not from global_var table
-		//Take course_ID and with that find 
+
+	
+	
+	public static void dropCourse(Connection conn, int personid){
+		try {
+			//Get current semester from global_var table
+			PreparedStatement stmt = conn.prepareStatement("SELECT SEMESTER FROM GLOBAL_VAR");
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){ //for each semester
+				String semester = rs.getString("SEMESTER");
+				System.out.println("My courses for "+semester);
+				
+				//Get all the details from enrollment table
+				PreparedStatement stmt1 = conn.prepareStatement(
+				"SELECT  CLASS_ID,STATUS FROM ENROLLMENT WHERE SID = ? AND SEMESTER = ? and STATUS NOT LIKE 'Rejected'");
+				stmt1.setInt(1, personid);
+				stmt1.setString(2, semester);
+				ResultSet rs1 = stmt1.executeQuery();
+				while (rs1.next()) { //for each classid of enrollment
+					System.out.print("Class ID :-> " + rs1.getInt("CLASS_ID"));
+					System.out.print(",  Status :-> " + rs1.getString("STATUS"));
+					
+					//get all the details from class id using the class table
+					PreparedStatement stmt2 = conn.prepareStatement(
+					"SELECT  CID,FAC_NAME,DAYS,START_TIME,END_TIME FROM CLASS WHERE CLASS_ID=?");
+					stmt2.setInt(1, rs1.getInt("CLASS_ID"));
+					ResultSet rs2 = stmt2.executeQuery();
+					
+					while (rs2.next()) { //for each classid entry of class table
+						//Get CID from classid
+						String course_id = rs2.getString("CID");
+						System.out.print(",  Course ID :-> " + course_id);
+						
+						//Get course title from CID
+						PreparedStatement stmt3 = conn.prepareStatement(
+						"SELECT  TITLE FROM COURSE WHERE CID = ?");
+						stmt3.setString(1, course_id);
+						ResultSet rs3 = stmt3.executeQuery();
+						while(rs3.next()){
+							System.out.print(",  Course Title :-> " + rs3.getString("TITLE"));
+						} ///closing for rs3
+	
+						System.out.print(",  Faculty name :-> " + rs2.getString("FAC_NAME"));
+						System.out.print(",  Days :-> " + rs2.getString("DAYS"));
+						System.out.println(",  Time :-> " + rs2.getString("START_TIME")+" -- "+rs2.getString("END_TIME"));		
+					} //closing for rs2	
+				} //closing for rs1
+			}//closing for rs
+			System.out.println("Choose the ClassId you want to drop: ");
+			System.out.println("Enter 0 to go back to the previous menu: ");
+			//go back to previous menu	
+			int cid = sc.nextInt();
+			if (cid == 0) {
+				studentHome(conn, personid);
+			}
+			else{
+				//FIND THE STATUS
+				PreparedStatement stmt3 = conn.prepareStatement("select STATUS from enrollment where class_id = ?");
+				stmt3.setInt(1, cid);
+				ResultSet rs3 = stmt3.executeQuery();
+				
+				//DROP THE ENTRY FROM ENROLLMENT
+				PreparedStatement stmt4 = conn.prepareStatement("DELETE from enrollment where class_id = ? and sid=?");
+				stmt4.setInt(1, cid);
+				stmt4.setInt(2, personid);
+				stmt4.executeQuery();
+
+				if(rs3.next()){
+					String status = rs3.getString("STATUS");
+					if(status.toLowerCase().equals("waitlisted")){
+						dropWaitlistedCourse(conn, personid, cid);
+					}
+					if(status.toLowerCase().equals("enrolled")){
+						dropEnrolledCourse(conn, personid, cid);
+					}
+					
+					if(status.toLowerCase().equals("pending")){
+						dropPendingCourse(conn, personid, cid);
+					}
+				}//closing first if
+			}//closing else
+			System.out.println("Dropped Successfully.");
+			dropCourse(conn, personid);
+			
+		} //closing for try
+		catch (Exception ex) {
+			System.out.println(ex);
+		}//closing catch
+	}//closing dropCourse()
+	
+	
+	public static void dropWaitlistedCourse(Connection conn, int personid, int cid) throws SQLException{
+		try{
+		//increase waitlist capacity from class
+		PreparedStatement stmt1 = conn.prepareStatement("UPDATE class set WAITLIST_CAPACITY = WAITLIST_CAPACITY +1 "
+				+ "WHERE CLASS_ID = ?");
+		stmt1.setInt(1, cid);
+		stmt1.executeQuery();
+
+		//remove waitlist entry from wait_list table
+		PreparedStatement stmt2 = conn.prepareStatement("Delete from waitlist where sid = ? and class_id = ?");
+		stmt2.setInt(1, personid);
+		stmt2.setInt(2, cid);
+		stmt2.executeQuery();
+				
+		}
+		catch(Exception ex){
+			System.out.println("Couldn't drop waitlisted course. Error : "+ ex);
+		}
 		
+	}
+
+	public static void dropEnrolledCourse(Connection conn, int personid, int cid){
+		try{
+			//check if there's a waitlist
+			PreparedStatement stmt1 = conn.prepareStatement("select count(*) as waitlist from wait_list where CLASS_ID = ?");
+			stmt1.setInt(1, cid);
+			ResultSet rs = stmt1.executeQuery();
+			int waitlist = 0;
+			if(rs.next()){
+				waitlist = rs.getInt("waitlist");
+			}
+			//if there's a waitlist: 
+			if(waitlist>0){
+				//1. increase the waitlist capacity 
+				PreparedStatement stmt2 = conn.prepareStatement("UPDATE class set waitlist_CAPACITY = waitlist_CAPACITY +1 "
+						+ "WHERE CLASS_ID = ?");
+				stmt2.setInt(1, cid);
+				stmt2.executeQuery();
+	
+			//find the sid of the top student AND DELETE HIM
+				int newpersonid = 0;
+				PreparedStatement stmt3 = conn.prepareStatement("select sid from wait_list where class_id = ? and rownum=1");
+				stmt3.setInt(1, cid);
+				ResultSet rs1 = stmt3.executeQuery();
+				if(rs1.next()){
+					newpersonid = rs1.getInt("SID");
+				}
+				PreparedStatement stmt4 = conn.prepareStatement("DELETE from wait_list where class_id = ? and rownum=1");
+				stmt4.setInt(1, cid);
+				stmt4.executeQuery();			
+				//enroll him				
+				PreparedStatement stmt5 = conn.prepareStatement("UPDATE ENROLLMENT SET STATUS = 'Enrolled' where "
+						+ "class_id = ? and sid= ?");
+				stmt5.setInt(1, cid);
+				stmt5.setInt(2, newpersonid);
+				stmt5.executeQuery();
+
+			
+			}
+			else{		
+			//increase class capacity
+			PreparedStatement stmt6 = conn.prepareStatement("UPDATE class set CAPACITY = CAPACITY +1 "
+					+ "WHERE CLASS_ID = ?");
+			stmt6.setInt(1, cid);
+			stmt6.executeQuery();
+			}
+		}
+		catch(Exception ex){
+			System.out.println("Couldn't drop waitlisted course. Error : "+ ex);			
+		}
+		
+	}
+
+	public static void dropPendingCourse(Connection conn, int personid, int cid){
+		try{
+			//remove entry from special_enrollment
+			PreparedStatement stmt1 = conn.prepareStatement("Delete from special_permission where sid = ? "
+					+ "and class_id = ?");
+			stmt1.setInt(1, personid);
+			stmt1.setInt(2, cid);
+			stmt1.executeQuery();
+			
+		}
+		catch(Exception ex){
+			System.out.println("Couldn't drop waitlisted course. Error : "+ ex);
+		}
 		
 	}
 	
