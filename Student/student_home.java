@@ -288,7 +288,7 @@ public class student_home {
 			System.out.println(ex);
 		}
 	}
-public static void enrollCourse(Connection conn, int personid) throws SQLException {
+public static void enrollCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 		
 		//get current semester
 		PreparedStatement globl_stmt = conn.prepareStatement(
@@ -348,25 +348,67 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 		
 		//Code to get all credits currently student has enrolled for
 		//Got to enrollment table : Current sem+SID+Status(except rejected)
-		PreparedStatement enroll_table_stmt = conn.prepareStatement(
-				"SELECT CLASS_ID "
-				+ "FROM ENROLLMENT "
-				+ "WHERE SID = ? AND STATUS <> ? AND SEMESTER = ?"+"");
-		enroll_table_stmt.setInt(1, personid);
-		enroll_table_stmt.setString(2, "Rejected");
-		enroll_table_stmt.setString(3, sem);
-		ResultSet enroll_table = enroll_table_stmt.executeQuery();
-//		SELECT SUM(MAX_CREDIT) 
-//		FROM COURSE CO,CLASS CL,ENROLLMENT ENR
-//		WHERE CO.CID = CL.CID AND CL.CLASS_ID = ENR.CLASS_ID 
-//		AND SID = 200152899 AND STATUS NOT IN(‘REJECTED’) AND SEMESTER = FALL2017
-		//from this class_ID get credits from course tables;
-//		float total_enrolled_credit=0;
-//		while(enroll_table.next()){
-//			total_enrolled_credit+=enroll_table.getFloat("MAX_CREDIT");
+		PreparedStatement credit_stmt = conn.prepareStatement("SELECT SUM(MAX_CREDIT) AS TOTAL_CREDIT FROM COURSE,CLASS,ENROLLMENT"
+    			+ "  WHERE COURSE.CID = CLASS.CID AND CLASS.CLASS_ID=ENROLLMENT.CLASS_ID"
+    			+ "  AND STATUS NOT IN ('REJECTED') AND ENROLLMENT.SID=? GROUP BY ENROLLMENT.SID");
+		credit_stmt.setInt(1, personid);
+		ResultSet max_credit_enroll = credit_stmt.executeQuery();
+		
+		int max_credit_limit1=0;
+		while(max_credit_enroll.next()){
+			System.out.println("Answer is "+max_credit_enroll.getInt("TOTAL_CREDIT"));
+			max_credit_limit1=max_credit_enroll.getInt("TOTAL_CREDIT");
+		}
+//		if(max_credit_limit1>max_credit_limit){
+//			System.out.println("You have already enrolled for maximum credits. Can't add this cout");
+//			System.out.println("Redirecting back to home page...");
+//			TimeUnit.SECONDS.sleep(3);
+//			studentHome(conn, personid);
 //		}
-		//System.out.println("Max credits enrolled so far is"+total_enrolled_credit);
+		//End of condition checking : max_credit_enrolled>max_credit_allowed
+		
+		//Start of condition checking : Class capacity is full or not
+		PreparedStatement capacity_stmt = conn.prepareStatement("SELECT CAPACITY FROM CLASS WHERE CLASS_ID =?");
+		capacity_stmt.setInt(1,class_id);
+		ResultSet max_class_capacity = capacity_stmt.executeQuery();
+		int max_capacity=0;
+		while(max_class_capacity.next()){
+			max_capacity=max_class_capacity.getInt("CAPACITY");
+		}
+		System.out.println("Maximum class capacity is :->"+max_capacity);
+		if(max_capacity<=0){
+			System.out.println("Class is already full. Would you like to be placed on waitlist (Y/N)?:->");
+		}
+		String wait_list_choice=sc.next();
+		if(wait_list_choice.equals("Y")){
+			System.out.println("Logic to place on waitlist");
+		}else{
+			System.out.println("waitlist not needed. going back to previus menu");
+			studentHome(conn, personid);
+		}
+		//end of condition checking : Class capacity is full or not
+		
+		
+		//Start of pre-req checking : pre-reqs met or not
+		//1. course ID from class
+		//2. person_id
+		PreparedStatement pre_req_stmt = conn.prepareStatement("SELECT "
+    			+ "(SELECT COUNT(*) FROM PRE_REQ WHERE CID=?) - "
+    			+ "(SELECT COUNT(*) FROM ENROLLMENT,CLASS,COURSE WHERE COURSE.CID=CLASS.CID AND CLASS.CLASS_ID = ENROLLMENT.CLASS_ID  AND ENROLLMENT.SID=?"
+    			+ "AND ENROLLMENT.STATUS IN 'Enrolled' AND SEMESTER NOT IN (?) AND COURSE.CID IN "
+    			+ "(SELECT PRE_REQ_COURSES FROM PRE_REQ WHERE CID=?)) AS TOTAL_COUNT FROM dual;");
+		pre_req_stmt.setString(1,course_id);
+		pre_req_stmt.setInt(2,personid);
+		pre_req_stmt.setString(3,sem);
+		pre_req_stmt.setString(4,sem);
+		pre_req_stmt.setString(1,course_id);
+		ResultSet pre_req_rs = pre_req_stmt.executeQuery();
+		boolean pre_req_met=pre_req_rs.getInt("TOTAL_COUNT")>0?false:true;
+		if(pre_req_met)System.out.println(" Met");
+		else System.out.println("Not met");
+		//end of pre-req checking : pre-reqs met or not
 	}
+
 
 	
 	public static void viewMyCourses(Connection conn, int personid) {
