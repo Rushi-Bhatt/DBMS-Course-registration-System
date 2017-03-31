@@ -520,6 +520,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				stmt.executeUpdate();
 				System.out.println("Grades updated successfully");
 				System.out.println("----------------------------------------------------------");
+				//Trigger will be called to update the GPA of student.
 				addGrades(conn,personid,studentid);
 			}
 		} //closing for try
