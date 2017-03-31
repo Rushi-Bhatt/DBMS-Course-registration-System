@@ -225,7 +225,8 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	//the string into values and update those in the database accordingly. if anyone is trying to
 	//create a SQL statement for this will have to discuss this before creating.
 	int pre_req = 0;
-	String pre_req_courses=sc.next();
+	String pre_req_courses=sc.nextLine();
+	sc.nextLine();
 	if(pre_req_courses.trim() != ""){
 		pre_req = 1;
 	}
@@ -256,7 +257,6 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 		DID = (rs.getInt("DID"));		
 		
 	}
-	
 	PreparedStatement stmt = conn.prepareStatement("INSERT INTO COURSE(CID, TITLE, DID, SP_PERMISSION, PRE_REQ, LVL, "
 			+ "MIN_CREDIT, MAX_CREDIT, GPA_REQ) VALUES(?,?,?,?,?,?,?,?,?)");
 	stmt.setString(1, course_id);
@@ -270,7 +270,7 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	stmt.setFloat(9, gpa_req);
 	
 	stmt.executeUpdate();
-
+	if(pre_req==0){
 	String[] prereq = pre_req_courses.split(",");
 	for(int i=0;i<prereq.length;i++){
 		PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
@@ -278,7 +278,7 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 		stmt2.setString(2, prereq[i]);
 		stmt2.executeQuery();
 	}
-	
+	}
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
 	}
