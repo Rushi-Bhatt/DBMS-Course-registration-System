@@ -1,0 +1,28 @@
+//TRIGGER TO INSERT INTO WAIT_LIST 
+create or replace trigger waitlist_after_insert
+  2  AFTER INSERT
+  3  ON ENROLLMENT
+  4  FOR EACH ROW
+  5  DECLARE
+  6  sid INTEGER;
+  7  CLASS_ID INTEGER;
+  8  BEGIN
+  9  IF :new.STATUS='Waitlisted' then
+ 10  insert into wait_list(sid, class_id) values(:new.sid, :new.class_id);
+ 11  end IF;
+ 12  END;
+
+
+
+
+
+//TRIGGER TO INCREASE SPECIAL_PERMISSION_ID
+ CREATE OR REPLACE TRIGGER sp_perm_id_inc
+  2  BEFORE INSERT ON SPECIAL_PERMISSION
+  3  FOR EACH ROW
+  4  BEGIN
+  5  SELECT sp_perm_id.NEXTVAL
+  6  INTO :new.SPCL_PERM_ID
+  7  FROM dual;
+  8  END;
+  9  /

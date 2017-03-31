@@ -1,0 +1,3 @@
+//decrease the class capacity on enrolling
+//increase on dropping - already done, create trigger instead.
+//check for multiple enrollments
