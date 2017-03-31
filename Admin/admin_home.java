@@ -4,6 +4,9 @@ import java.util.Scanner;
 import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 import java.util.concurrent.TimeUnit;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import Connection.*;
 import java.util.*;
 
@@ -65,11 +68,6 @@ public class admin_home {
 			System.out.print(ex);
 		}
 	}
-
-		
-
-	
-
 
 	public static void viewOwnProfile(Connection conn, int personid) {
 		try {
@@ -179,7 +177,7 @@ public class admin_home {
 				if (choice == 0) {
 					adminHome(conn, personid);
 				} else if (choice == 1) {
-					addGrades(conn, personid);
+					addGrades(conn, personid, stud_id);
 				}
 			}
 		} catch (Exception ex) {
@@ -261,7 +259,6 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 		DID = (rs.getInt("DID"));		
 		
 	}
-	
 	PreparedStatement stmt = conn.prepareStatement("INSERT INTO COURSE(CID, TITLE, DID, SP_PERMISSION, PRE_REQ, LVL, "
 			+ "MIN_CREDIT, MAX_CREDIT, GPA_REQ) VALUES(?,?,?,?,?,?,?,?,?)");
 	stmt.setString(1, course_id);
@@ -275,6 +272,7 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	stmt.setFloat(9, gpa_req);
 	
 	stmt.executeUpdate();
+
 	
 	if(pre_req==0){
 		String[] prereq = pre_req_courses.split(",");
@@ -287,6 +285,7 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	}
 	
 	
+
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
 	}
@@ -518,18 +517,21 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			stmt7.setString(3, sem);
 			stmt7.executeUpdate();
 			System.out.println("Done..");
+			DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+			Calendar calobj = Calendar.getInstance();
+		       System.out.println(df.format(calobj.getTime()));
 			PreparedStatement stmt8 = conn.prepareStatement("Update special_permission set status = 'APPROVED', APPROVED_BY=?"
 					+ ", APPROVED_ON = ? "
 					+ "WHERE SID=? AND CLASS_ID=? "
 					+ " AND STATUS='PENDING'");
 			stmt8.setInt(1, personid);
-			stmt8.setInt(2, 30000);
+			stmt8.setString(2, String.valueOf(df.format(calobj.getTime())));
 			stmt8.setInt(3, stud_id);
 			stmt8.setInt(4,class_id );
 			stmt8.executeUpdate();
 			System.out.println("Status is approved");
 		}else{
-			//request is not approved:0
+			//request is rejected:0
 			//Start: for that SID and class_ID change the status from pending to approved in enrollment
 			System.out.println("Reject");
 			PreparedStatement stmt2 = conn.prepareStatement("UPDATE ENROLLMENT SET STATUS='Rejected' WHERE SID=? AND CLASS_ID=?"
@@ -557,8 +559,70 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		
 	}
 	
-	public static void addGrades(Connection conn, int personid) {
-		System.out.println("Press course number to add grades");
+
+	public static void addGrades(Connection conn, int personid, int studentid) {
+		System.out.println("Entering grades for Student id:"+studentid);
+		//view courses from enrollment for current student
+		try {
+			//Get current semester from global_var table
+			PreparedStatement stmt = conn.prepareStatement("SELECT CLASS_ID,GRADE,SEMESTER FROM ENROLLMENT WHERE STATUS = ? AND SID = ?");
+			stmt.setString(1,"Enrolled");
+			stmt.setInt(2,studentid);
+			
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){ //for each enrolled class of that student
+				System.out.print("Class ID :-> " + rs.getInt("CLASS_ID"));	
+				//get all the details from class id using the class table
+					PreparedStatement stmt2 = conn.prepareStatement(
+					"SELECT  CID FROM CLASS WHERE CLASS_ID=?");
+					stmt2.setInt(1, rs.getInt("CLASS_ID"));
+					ResultSet rs2 = stmt2.executeQuery();
+					
+					while (rs2.next()) { //for each classid entry of class table
+						//Get CID from classid
+						String course_id = rs2.getString("CID");
+						System.out.print("|  Course ID :-> " + course_id);
+						
+						//Get course title from CID
+						PreparedStatement stmt3 = conn.prepareStatement(
+						"SELECT  TITLE FROM COURSE WHERE CID = ?");
+						stmt3.setString(1, course_id);
+						ResultSet rs3 = stmt3.executeQuery();
+						while(rs3.next()){
+							System.out.print("|  Course Title :-> " + rs3.getString("TITLE"));
+						} ///closing for rs3
+	
+					} //closing for rs2	
+				System.out.print("|  Grade :-> " + rs.getString("GRADE"));
+				System.out.println("|  Semester :-> " + rs.getString("SEMESTER"));	
+				System.out.println("-------------------------------------------------------------------------------------------------------");
+			}//closing for rs
+			System.out.println("Select class id to enter/modify grade.. Press 0 to go back to previous menu");
+			int choice = sc.nextInt();
+			if (choice == 0) {
+				adminHome(conn, personid);
+			}
+			else{
+				//for that classid, change the grade to the mentioned grade by admin
+				System.out.println("Enter new grade: ");
+				String newGrade = sc.next();
+				stmt = conn.prepareStatement(
+				"UPDATE ENROLLMENT SET GRADE = ? WHERE SID=? AND CLASS_ID=?");
+				stmt.setString(1, newGrade);  //here give validation in database to limit the value
+				stmt.setInt(2, studentid); //studentid passed as a parameter
+				stmt.setInt(3, choice); //class id is entered as a choice 
+				stmt.executeUpdate();
+				System.out.println("Grades updated successfully");
+				System.out.println("----------------------------------------------------------");
+				//Trigger will be called to update the GPA of student.
+				//gpa = select avg(GRADE_POINTS) from GRADE_MAP,ENROLLMENT where GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.sid=200152899 AND ENROLLMENT.GRADE is not null;
+				addGrades(conn,personid,studentid);
+			}
+		} //closing for try
+		catch (Exception ex) {
+			System.out.println(ex);
+		}
+
 	}
 
 
