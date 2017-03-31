@@ -22,7 +22,8 @@ public class admin_home {
 			System.out.println("5. View/Add course offering");
 			System.out.println("6. View/Approve Special Enrollment Requests");
 			System.out.println("7. Enforce Add/Drop Deadline");
-			System.out.println("8. Logout");
+			System.out.println("8. Manage Waitlist");
+			System.out.println("9. Logout");
 			System.out.println("Enter your choice :-> ");
 			int admin_choice = sc.nextInt();
 			switch (admin_choice) {
@@ -54,6 +55,9 @@ public class admin_home {
 				// dealing thing
 				break;
 			case 8:
+				manageWaitlist(conn, personid);
+				break;
+			case 9:
 				System.out.println("Loggin out...");
 				TimeUnit.SECONDS.sleep(3);
 				break;
@@ -268,16 +272,26 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	stmt.setInt(7, min_credit);
 	stmt.setInt(8, max_credit);
 	stmt.setFloat(9, gpa_req);
-	
 	stmt.executeUpdate();
-	if(pre_req==0){
-	String[] prereq = pre_req_courses.split(",");
-	for(int i=0;i<prereq.length;i++){
-		PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
-		stmt2.setString(1,course_id);
-		stmt2.setString(2, prereq[i]);
-		stmt2.executeQuery();
-	}
+	if(pre_req==1){
+		if(pre_req_courses.contains(","))
+		{
+			String[] prereq = pre_req_courses.split(",");
+			for(int i=0;i<prereq.length;i++)
+			{
+				PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
+				stmt2.setString(1,course_id);
+				stmt2.setString(2, prereq[i]);
+				stmt2.executeQuery();
+			}
+		}
+		else
+		{
+			PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
+			stmt2.setString(1,course_id);
+			stmt2.setString(2, pre_req_courses);
+			stmt2.executeQuery();
+		}
 	}
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
@@ -291,7 +305,6 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	//if query is successful, display success message and go back to previous menu.
 	//if query is unsuccessful, display specific error message and go back to previous menu.
 }
-
 public static void adminViewCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 	// Admin enters the courseID and system shows all course details
 	try{
@@ -558,4 +571,51 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("Couldn't perform the action. Error: " + ex);
 	}
 	}
+
+
+	public static void manageWaitlist(Connection conn, int personid) throws SQLException{
+		try{
+			PreparedStatement st = conn.prepareStatement("SELECT * FROM WAIT_LIST");
+			ResultSet rs = st.executeQuery();
+			int sid, class_id, approve;
+			while(rs.next()){
+				System.out.println("SID: -->  " + rs.getInt("SID"));
+				System.out.println("CLASS_ID: -->  " + rs.getInt("CLASS_ID"));
+			}
+			System.out.println("Enter SID you want to approve/reject:");
+			sid = sc.nextInt();
+			System.out.println("Enter CLASS_ID you want to approve/reject:");
+			class_id = sc.nextInt();
+			System.out.println("Do you want to reject or approve(0/1)?:");
+			approve = sc.nextInt();
+			if(approve==0){
+				PreparedStatement pst = conn.prepareStatement("update enrollment set status='Rejected' where "
+						+ "sid = ? and class_id = ?");
+				pst.setInt(1, sid);
+				pst.setInt(2, class_id);
+				pst.executeUpdate();
+				System.out.println("Successfully rejected");
+			}
+			else{
+				PreparedStatement pst1 = conn.prepareStatement("update enrollment set status='Enrolled' where "
+						+ "sid = ? and class_id = ?");
+				pst1.setInt(1, sid);
+				pst1.setInt(2, class_id);
+				pst1.executeUpdate();
+				System.out.println("Successfully enrolled");
+			}
+			System.out.println("Enter 0 to go back, 1 to go to home page");
+			int choice = sc.nextInt();
+			if (choice == 1)
+				adminHome(conn, personid);
+			else
+				manageWaitlist(conn,personid);
+		}
+	catch(Exception ex){
+		System.out.println("Couldn't perform the action. Error: " + ex);
+	}
+	}
+
+
+
 }

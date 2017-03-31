@@ -1,27 +1,38 @@
-//TRIGGER TO INSERT INTO WAIT_LIST 
-create or replace trigger waitlist_after_insert
-  2  AFTER INSERT
-  3  ON ENROLLMENT
-  4  FOR EACH ROW
-  5  DECLARE
-  6  sid INTEGER;
-  7  CLASS_ID INTEGER;
-  8  BEGIN
-  9  IF :new.STATUS='Waitlisted' then
- 10  insert into wait_list(sid, class_id) values(:new.sid, :new.class_id);
- 11  end IF;
- 12  END;
+//TRIGGER TO INSERT INTO WAIT_LIST and decrease waitlist capacity from class
+create or replace trigger add_to_waitlist_after_insert
+   AFTER INSERT
+   ON ENROLLMENT
+   FOR EACH ROW
+   DECLARE
+   sid INTEGER;
+   CLASS_ID INTEGER;
+   BEGIN
+   IF :new.STATUS='Waitlisted' then
+   insert into wait_list(sid, class_id) values(:new.sid, :new.class_id);
+   update class set waitlist_capacity= waitlist_capacity-1 where class_id = :new.class_id;
+   end IF;
+   END;
 
+//trigger to manage capacity and waitlist capacity of class, delete entry from waitlist after it has been updated in enrollment
 
-create or replace trigger waitlist_after_insert
+create or replace trigger del_waitlist_after_update
     AFTER UPDATE of STATUS
     ON ENROLLMENT
     FOR EACH ROW
     DECLARE
     BEGIN
     IF :new.STATUS='Enrolled' then
-	update special_permission set status = 'APPROVED' where SID = :old.sid and CLASS_ID = :old.class_id;
-   	end IF;
+    	IF :old.STATUS='Waitlisted' then
+		delete from wait_list where sid = :old.sid and class_id = :old.class_id;
+    	update class set waitlist_capacity= waitlist_capacity+1, capacity = capacity-1 where class_id = :new.class_id;
+		ELSE
+		update class set capacity = capacity-1 where class_id = :new.class_id;
+		end IF;
+	end IF;
+	IF :new.STATUS='Rejected' AND :old.STATUS='Waitlisted' then
+	delete from wait_list where sid = :old.sid and class_id = :old.class_id;
+    update class set waitlist_capacity= waitlist_capacity+1 where class_id = :new.class_id;
+	end IF;
    	END;
 
 

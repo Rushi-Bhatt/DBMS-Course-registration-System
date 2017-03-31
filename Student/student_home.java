@@ -288,7 +288,8 @@ public class student_home {
 			System.out.println(ex);
 		}
 	}
-public static void enrollCourse(Connection conn, int personid) throws SQLException, InterruptedException {
+	
+	public static void enrollCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 		
 		//get current semester
 		PreparedStatement globl_stmt = conn.prepareStatement(
