@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -375,16 +376,18 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 			max_capacity=max_class_capacity.getInt("CAPACITY");
 		}
 		System.out.println("Maximum class capacity is :->"+max_capacity);
+		String wait_list_choice=null;
 		if(max_capacity<=0){
 			System.out.println("Class is already full. Would you like to be placed on waitlist (Y/N)?:->");
+			wait_list_choice=sc.next();
+			if(wait_list_choice.equals("Y")){
+				System.out.println("Logic to place on waitlist");
+			}else{
+				System.out.println("waitlist not needed. going back to previus menu");
+				studentHome(conn, personid);
+			}
 		}
-		String wait_list_choice=sc.next();
-		if(wait_list_choice.equals("Y")){
-			System.out.println("Logic to place on waitlist");
-		}else{
-			System.out.println("waitlist not needed. going back to previus menu");
-			studentHome(conn, personid);
-		}
+		
 		//end of condition checking : Class capacity is full or not
 		
 		
@@ -392,20 +395,26 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 		//1. course ID from class
 		//2. person_id
 		PreparedStatement pre_req_stmt = conn.prepareStatement("SELECT "
-    			+ "(SELECT COUNT(*) FROM PRE_REQ WHERE CID=?) - "
+    			+ "(SELECT COUNT(*) FROM PRE_REQ P WHERE P.CID=?) - "
     			+ "(SELECT COUNT(*) FROM ENROLLMENT,CLASS,COURSE WHERE COURSE.CID=CLASS.CID AND CLASS.CLASS_ID = ENROLLMENT.CLASS_ID  AND ENROLLMENT.SID=?"
-    			+ "AND ENROLLMENT.STATUS IN 'Enrolled' AND SEMESTER NOT IN (?) AND COURSE.CID IN "
-    			+ "(SELECT PRE_REQ_COURSES FROM PRE_REQ WHERE CID=?)) AS TOTAL_COUNT FROM dual;");
+    			+ "AND ENROLLMENT.STATUS IN 'Enrolled' AND CLASS.SEMESTER NOT IN (?) AND COURSE.CID IN "
+    			+ "(SELECT PRE_REQ_COURSES FROM PRE_REQ WHERE CID=?)) AS TOTAL_COUNT FROM dual");
 		pre_req_stmt.setString(1,course_id);
 		pre_req_stmt.setInt(2,personid);
 		pre_req_stmt.setString(3,sem);
 		pre_req_stmt.setString(4,sem);
-		pre_req_stmt.setString(1,course_id);
+		//pre_req_stmt.setString(1,course_id);
 		ResultSet pre_req_rs = pre_req_stmt.executeQuery();
-		boolean pre_req_met=pre_req_rs.getInt("TOTAL_COUNT")>0?false:true;
-		if(pre_req_met)System.out.println(" Met");
-		else System.out.println("Not met");
+		while(pre_req_rs.next()){
+			System.out.println("output"+pre_req_rs.getInt("TOTAL_COUNT"));
+		}
+		//boolean pre_req_met=(pre_req_rs.getInt("TOTAL_COUNT")>0)?false:true;
+		//if(pre_req_met)System.out.println(" Met");
+		//else System.out.println("Not met");
 		//end of pre-req checking : pre-reqs met or not
+		
+		//Begin of class schedule conflitct checking
+		
 	}
 
 
@@ -773,4 +782,36 @@ public static void enrollCourse(Connection conn, int personid) throws SQLExcepti
 			System.out.println(ex);
 		}
 	}//closing of viewGrades
+	
+	public static boolean classConflictCheck(int class_id, String course_id, Connection conn, int personid, String sem) throws SQLException{
+		boolean check=true;
+		//first get all classes in which he is enrolled.
+		PreparedStatement current_sch_stmt = conn.prepareStatement("SELECT CLASS.CLASS_ID,CLASS.DAYS,CLASS.START_TIME,CLASS.END_TIME"
+				+ "	 FROM CLASS"
+    			+ "  WHERE CLASS_ID=?");
+		current_sch_stmt.setInt(1, class_id);
+		ResultSet current_class_rs = current_sch_stmt.executeQuery();
+		String current_day=null;
+		while(current_class_rs.next()){
+			
+		}
+		PreparedStatement class_chk_stmt = conn.prepareStatement("SELECT CLASS.CLASS_ID,CLASS.DAYS,CLASS.START_TIME,CLASS.END_TIME"
+				+ "	 FROM CLASS,ENROLLMENT"
+    			+ "  WHERE CLASS.CLASS_ID=ENROLLMENT.CLASS_ID"
+    			+ "  AND STATUS NOT IN ('REJECTED') AND ENROLLMENT.SID = ? AND ENROLLMENT.SEMESTER = ?");
+		class_chk_stmt.setInt(1, personid);
+		class_chk_stmt.setString(2, sem);
+		ResultSet class_schedule = class_chk_stmt.executeQuery();
+		System.out.println("Current sem is"+sem);
+		System.out.println("Student is "+personid);
+		System.out.println("current schedule is ");
+		while(class_schedule.next()){
+			System.out.println("Class ID is"+class_schedule.getString("CLASS_ID"));
+			System.out.println("Days:-> "+class_schedule.getString("DAYS"));
+			System.out.println("Start time:-> "+class_schedule.getString("START_TIME"));
+			System.out.println("End time:-> "+class_schedule.getString("END_TIME"));
+			
+		}
+		return check;
+	}//End of classConflictCheck function
 } //closing of class
