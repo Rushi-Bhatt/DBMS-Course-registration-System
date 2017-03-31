@@ -521,6 +521,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				System.out.println("Grades updated successfully");
 				System.out.println("----------------------------------------------------------");
 				//Trigger will be called to update the GPA of student.
+				//gpa = select avg(GRADE_POINTS) from GRADE_MAP,ENROLLMENT where GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.sid=200152899 AND ENROLLMENT.GRADE is not null;
 				addGrades(conn,personid,studentid);
 			}
 		} //closing for try
