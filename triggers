@@ -13,6 +13,16 @@ create or replace trigger waitlist_after_insert
  12  END;
 
 
+create or replace trigger waitlist_after_insert
+    AFTER UPDATE of STATUS
+    ON ENROLLMENT
+    FOR EACH ROW
+    DECLARE
+    BEGIN
+    IF :new.STATUS='Enrolled' then
+	update special_permission set status = 'APPROVED' where SID = :old.sid and CLASS_ID = :old.class_id;
+   	end IF;
+   	END;
 
 
 
