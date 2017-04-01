@@ -594,13 +594,13 @@ public static boolean checkTime(Connection conn, int personid, String sem, int c
 		if(conflict){
 		start_time_ToComp = pre_req_rs2.getString("start_time");
 		end_time_ToComp = pre_req_rs2.getString("end_time");
-		if((start_time.compareTo(start_time_ToComp)> 0 && start_time.compareTo(end_time_ToComp) < 0) || (end_time.compareTo(start_time_ToComp)> 0 && end_time.compareTo(end_time_ToComp) < 0)){
+		if((start_time.compareTo(start_time_ToComp)>= 0 && start_time.compareTo(end_time_ToComp) < 0) || (end_time.compareTo(start_time_ToComp)> 0 && end_time.compareTo(end_time_ToComp) <= 0)){
 			conflict = true;
 			break;
 		}
 		else
 			conflict = false;
-	}
+		}
 	}
 	
 	if(conflict)
