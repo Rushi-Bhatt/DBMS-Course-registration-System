@@ -486,11 +486,6 @@ public static boolean checkCredit(Connection conn, int personid, String sem, int
 	
 }
 
-
-
-
-
-
 public static boolean checkCapacity(Connection conn, int personid, String sem, int class_id){
 	//Start of condition checking : Class capacity is full or not
 	try{
@@ -515,8 +510,6 @@ public static boolean checkCapacity(Connection conn, int personid, String sem, i
 		return false;
 	}
 }
-
-
 
 public static boolean checkPreReq(Connection conn, int personid, String sem, String course_id) throws SQLException{
 	//Start of pre-req checking : pre-reqs met or not
@@ -551,7 +544,6 @@ public static boolean checkPreReq(Connection conn, int personid, String sem, Str
 
 }
 
-
 public static boolean checkTime(Connection conn, int personid, String sem, int class_id) throws SQLException{
 	//check if there's clash of days and times
 	//get the days of the class 
@@ -578,7 +570,7 @@ public static boolean checkTime(Connection conn, int personid, String sem, int c
 	String end_time_ToComp;
 	PreparedStatement pre_req_stmt2 = conn.prepareStatement("select days, start_time, end_time from class where class_id in "
 			+ "(select class_id from enrollment where sid = ? and semester =? and (status like 'Enrolled' or "
-			+ "status like 'Waitlisted'))");
+			+ "status like 'Waitlisted' or status like 'Pending'))");
 	pre_req_stmt2.setInt(1,personid);
 	pre_req_stmt2.setString(2, sem);
 	ResultSet pre_req_rs2 = pre_req_stmt2.executeQuery();
@@ -595,7 +587,7 @@ public static boolean checkTime(Connection conn, int personid, String sem, int c
 		if(conflict){
 		start_time_ToComp = pre_req_rs2.getString("start_time");
 		end_time_ToComp = pre_req_rs2.getString("end_time");
-		if((start_time.compareTo(start_time_ToComp)> 0 && start_time.compareTo(end_time_ToComp) < 0) || (end_time.compareTo(start_time_ToComp)> 0 && end_time.compareTo(end_time_ToComp) < 0)){
+		if((start_time.compareTo(start_time_ToComp)>= 0 && start_time.compareTo(end_time_ToComp) <= 0) || (end_time.compareTo(start_time_ToComp)>= 0 && end_time.compareTo(end_time_ToComp) <= 0)){
 			conflict = true;
 			break;
 		}
@@ -641,7 +633,6 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 	
 }
 
-	
 	public static void viewMyCourses(Connection conn, int personid) {
 		// TODO Auto-generated method stub
 		//view courses from enrollment for current semester
@@ -701,9 +692,7 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 		}
 	}
 
-	
-
-	
+		
 	public static void dropCourse(Connection conn, int personid){
 		try {
 			//Get current semester from global_var table

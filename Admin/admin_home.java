@@ -62,6 +62,7 @@ public class admin_home {
 			case 9:
 				System.out.println("Loggin out..");
 				TimeUnit.SECONDS.sleep(3);
+				System.exit(0);
 				break;
 			default:
 				// invalid option selected. Throw back to previous menu.
