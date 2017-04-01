@@ -11,7 +11,13 @@ create or replace trigger add_to_waitlist_after_insert
    insert into wait_list(sid, class_id) values(:new.sid, :new.class_id);
    update class set waitlist_capacity= waitlist_capacity-1 where class_id = :new.class_id;
    end IF;
+   IF :new.STATUS='Pending' then
+   update class set capacity=capacity-1 where class_id = :new.class_id;
+   end IF;
    END;
+
+
+
 
 //trigger to manage capacity and waitlist capacity of class, delete entry from waitlist after it has been updated in enrollment
 

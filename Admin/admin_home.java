@@ -213,7 +213,7 @@ public class admin_home {
 		}
 	}
 	
-public static void adminAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
+	public static void adminAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
 	// Admin enters the course details.
 	System.out.println("1. Enter Course ID:-> ");
 	//dount here for the course ID. Entering as CSC111 or just 111? confirm once
@@ -234,7 +234,7 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	int pre_req = 0;
 	String pre_req_courses=sc.nextLine();
 	sc.nextLine();
-	if(pre_req_courses.trim() != ""){
+	if(!pre_req_courses.trim().isEmpty()){
 		pre_req = 1;
 	}
 	
