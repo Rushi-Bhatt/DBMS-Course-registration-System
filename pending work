@@ -1,7 +1,13 @@
 //decrease the class capacity on enrolling  ---  done
 //increase on dropping - already done, create trigger instead.
+<<<<<<< HEAD
 //check for multiple enrollments 
 //alter column approved on from number to varchar
 //transaction management
 //undergrad wala banda grad k course kyu lega bhai? btao?
 //
+=======
+//check for multiple enrollments semester for same subjects.create primary key for enrollment table.
+//alter column approved on from number to varchar
+//check for GPA requirement while enrolling course.
+>>>>>>> 34982417945172c63dbdbd733e5e9b7d5290f452
