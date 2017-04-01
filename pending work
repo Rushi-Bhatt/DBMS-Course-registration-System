@@ -1,4 +1,5 @@
 //decrease the class capacity on enrolling
 //increase on dropping - already done, create trigger instead.
-//check for multiple enrollments
+//check for multiple enrollments semester for same subjects.create primary key for enrollment table.
 //alter column approved on from number to varchar
+//check for GPA requirement while enrolling course.
