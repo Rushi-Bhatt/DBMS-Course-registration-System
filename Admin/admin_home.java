@@ -111,11 +111,13 @@ public class admin_home {
 			System.out.println("Enter Student's Email :--> ");
 			String email = sc.next();
 			System.out.println("Enter Student's Address :--> ");
-			String address = sc.next();
+			sc.nextLine();
+			String address = sc.nextLine();
 			System.out.println("Enter Student's Level(Graduate,Undergraduate) :--> ");
 			String stud_level = sc.next();
 			System.out.println("Enter Student's Residency Status(In State,Out Of State,International) :--> ");
-			String stud_resi_status = sc.next();
+			sc.nextLine();
+			String stud_resi_status = sc.nextLine();
 			System.out.println("Enter amound owned (if any) :--> ");
 			float stud_amount = sc.nextFloat();
 			PreparedStatement stmt = conn
@@ -170,7 +172,7 @@ public class admin_home {
 					System.out.println("First Name :-> " + rs.getString("FNAME"));
 					System.out.println("Last Name :-> " + rs.getString("LNAME"));
 					System.out.println("D.O.B. :-> " + rs.getString("BIRTH"));
-					System.out.println("Student’s Level :-> " + rs.getString("LVL"));
+					System.out.println("Student's Level :-> " + rs.getString("LVL"));
 					System.out.println("Student's Residency :-> " + rs.getString("RESIDENCY"));
 					System.out.println("Amount Owed :-> " + rs.getString("BILLAMOUNT"));
 					System.out.println("GPA :-> " + rs.getString("GPA"));
@@ -221,19 +223,19 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	String course_title=sc.next();
 	System.out.println("3. Enter Department name:-> ");
 	String dept_name=sc.next();
-	System.out.println("4. Enter Course Level:-> ");
+	System.out.println("4. Enter Course Level (e.g Graduate,Undergraduate):-> ");
 	String course_level=sc.next();
-	System.out.println("5. Enter GPA requirement:->(e.g. 3.0) ");
+	System.out.println("5. Enter GPA requirement:->(e.g. 3.0)");
 	float gpa_req=sc.nextFloat();
-	System.out.println("6. Enter Pre-req courses:-> ");
+	System.out.println("6. Enter Pre-req courses separated by comma(If any):-> (e.g.CSC501,CSC502) ");
 	
-	//Prerequisite courses may take multiple inputs. If values are seperated by commas(,) break
+	//Prerequisite courses may take multiple inputs. If values are separated by commas(,) break
 	//the string into values and update those in the database accordingly. if anyone is trying to
 	//create a SQL statement for this will have to discuss this before creating.
 	int pre_req = 0;
-	String pre_req_courses=sc.nextLine();
 	sc.nextLine();
-	if(pre_req_courses.trim() != ""){
+	String pre_req_courses=sc.nextLine();
+	if(!pre_req_courses.trim().isEmpty()){
 		pre_req = 1;
 	}
 	
@@ -295,8 +297,6 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 			stmt2.executeQuery();
 		}
 	}
-	
-	
 
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
@@ -315,7 +315,6 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	try{
 		System.out.println("Enter the course ID:--> ");
 		String course_id = sc.next();
-		System.out.println("here");
 		PreparedStatement stmt = conn.prepareStatement("SELECT LISTAGG(PRE_REQ_COURSES,',') WITHIN GROUP (ORDER BY CID) AS PREREQ FROM PRE_REQ WHERE CID=?");
 		stmt.setString(1, course_id);
 		ResultSet rs = stmt.executeQuery();
@@ -325,9 +324,6 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				prereq = rs.getString("PREREQ");
 			}while(rs.next());
 		}
-		stmt = conn.prepareStatement("SELECT CID,TITLE,DID,SP_PERMISSION,LVL,MIN_CREDIT,MAX_CREDIT,GPA_REQ FROM COURSE WHERE CID=?");
-		stmt.setString(1, course_id);
-		rs = stmt.executeQuery();
 		
 		stmt = conn.prepareStatement("SELECT CID,TITLE,DID,SP_PERMISSION,LVL,MIN_CREDIT,MAX_CREDIT,GPA_REQ FROM COURSE WHERE CID=?");
 		stmt.setString(1, course_id);
@@ -348,7 +344,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	}
 	}
 	catch(Exception ex){
-		System.out.println("Can't view"+ex);
+		System.out.println("Course view is not available."+ex);
 	}
 	System.out.println("Enter 0 to go back to previous menu:-> ");
 	int choice = sc.nextInt();
@@ -581,7 +577,9 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			stmt.setInt(2,studentid);
 			
 			ResultSet rs = stmt.executeQuery();
+			boolean rsEmpty = true;
 			while(rs.next()){ //for each enrolled class of that student
+				rsEmpty = false;
 				System.out.print("Class ID :-> " + rs.getInt("CLASS_ID"));	
 				//get all the details from class id using the class table
 					PreparedStatement stmt2 = conn.prepareStatement(
@@ -608,7 +606,12 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				System.out.println("|  Semester :-> " + rs.getString("SEMESTER"));	
 				System.out.println("-------------------------------------------------------------------------------------------------------");
 			}//closing for rs
-			System.out.println("Select class id to enter/modify grade.. Press 0 to go back to previous menu");
+			if(rsEmpty){
+				System.out.println("Student is not enrolled in any class.. Press 0 to go back to previous menu");
+			}else{
+				System.out.println("Select class id to enter/modify grade.. Press 0 to go back to previous menu");
+			}
+			
 			int choice = sc.nextInt();
 			if (choice == 0) {
 				adminHome(conn, personid);
@@ -638,7 +641,6 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		}
 
 	}
-
 
 	public static void enforceDeadline(Connection conn, int personid) throws SQLException{
 		System.out.println("Do you want to enforce deadline?(Y/N): ");
