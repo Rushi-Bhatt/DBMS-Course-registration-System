@@ -62,6 +62,7 @@ public class admin_home {
 			case 9:
 				System.out.println("Loggin out..");
 				TimeUnit.SECONDS.sleep(3);
+				System.exit(0);
 				break;
 			default:
 				// invalid option selected. Throw back to previous menu.
@@ -214,7 +215,7 @@ public class admin_home {
 		}
 	}
 	
-public static void adminAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
+	public static void adminAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
 	// Admin enters the course details.
 	System.out.println("1. Enter Course ID:-> ");
 	//dount here for the course ID. Entering as CSC111 or just 111? confirm once
@@ -238,7 +239,7 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	if(!pre_req_courses.trim().isEmpty()){
 		pre_req = 1;
 	}
-	
+
 	System.out.println("7. Enter if special approval required:->(0/1) ");
 	int approval_required=sc.nextInt();
 	System.out.println("8. Are credits as a Range of single credit(Y/N):-> ");
