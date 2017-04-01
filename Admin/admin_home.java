@@ -58,7 +58,7 @@ public class admin_home {
 				manageWaitlist(conn, personid);
 				break;
 			case 9:
-				System.out.println("Loggin out...");
+				System.out.println("Loggin out..");
 				TimeUnit.SECONDS.sleep(3);
 				break;
 			default:
