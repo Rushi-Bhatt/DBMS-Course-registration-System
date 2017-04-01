@@ -36,3 +36,10 @@ create or replace trigger waitlist_after_insert
   7  FROM dual;
   8  END;
   9  /
+
+ //Procedure to calculate the GPA: 
+CREATE PROCEDURE update_gpa (student_id NUMBER) AS      
+BEGIN
+UPDATE STUDENT SET GPA = ( SELECT AVG(GRADE_POINTS) from GRADE_MAP,ENROLLMENT        WHERE GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.SID = student_id )  WHERE SID  =  student_id;
+END;
+ 
