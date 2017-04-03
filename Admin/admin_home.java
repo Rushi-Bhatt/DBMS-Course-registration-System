@@ -12,7 +12,7 @@ import java.util.*;
 
 public class admin_home {
 	
-	static Scanner sc = new Scanner(System.in);
+	static Scanner sc = new Scanner(System.in).useDelimiter("\\n");
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
@@ -242,21 +242,20 @@ public class admin_home {
 
 	System.out.println("7. Enter if special approval required:->(0/1) ");
 	int approval_required=sc.nextInt();
-	System.out.println("8. Are credits as a Range of single credit(Y/N):-> ");
-	String range=sc.next();
 	int min_credit, max_credit;
-	if(range.equals("Y")){
-		System.out.println("Enter min_credit for the course:-> ");
+	if(approval_required==1){
+		//then only ask for min & max credits.
+		System.out.println("8. Enter min_credit for the course:-> ");
 		min_credit=sc.nextInt();
-		System.out.println("Enter max_credit for the course:-> ");
+		System.out.println("9. Enter max_credit for the course:-> ");
 		max_credit=sc.nextInt();
 	}else{
-		System.out.println("Enter credits for the course:-> ");
+		//enter the number of credits for that course.
+		System.out.println("8. Enter credits for the course:-> ");
 		max_credit=sc.nextInt();
 		min_credit = max_credit;
-		//this is the single credit value for the course, while updating in the database please
-		//enter this value in both the min_credit and max_credit in the course table database.
 	}
+
 	try{
 	PreparedStatement stmt1 = conn.prepareStatement("SELECT DID from department where DEPT_NAME=?");
 	stmt1.setString(1, dept_name);
@@ -264,7 +263,6 @@ public class admin_home {
 	int DID=0;
 	if(rs.next()){
 		DID = (rs.getInt("DID"));		
-		
 	}
 	PreparedStatement stmt = conn.prepareStatement("INSERT INTO COURSE(CID, TITLE, DID, SP_PERMISSION, PRE_REQ, LVL, "
 			+ "MIN_CREDIT, MAX_CREDIT, GPA_REQ) VALUES(?,?,?,?,?,?,?,?,?)");
@@ -298,6 +296,7 @@ public class admin_home {
 			stmt2.executeQuery();
 		}
 	}
+
 
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
@@ -648,7 +647,6 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		try{
 			String input = sc.next();
 			if(input.toLowerCase().equals("y")){
-				System.out.println("asdf");
 			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = ?");
 			st.setInt(1, 1);
 			st.executeUpdate();
