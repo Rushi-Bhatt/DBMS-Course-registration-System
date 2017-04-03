@@ -16,7 +16,7 @@ public class admin_home {
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
-			System.out.println("-----Welcome Admin------");
+			System.out.println("--------------------------Welcome Admin----------------------------");
 			System.out.println("1. View own profile");
 			System.out.println("2. Enroll new student");
 			System.out.println("3. View Student Details");
@@ -76,8 +76,8 @@ public class admin_home {
 
 	public static void viewOwnProfile(Connection conn, int personid) {
 		try {
-			System.out.println("View your own profile");
-			System.out.println("Press 0 to go back");
+			System.out.println("----------------------Your Profile Information--------------------");
+			
 			PreparedStatement stmt = conn.prepareStatement(
 					"SELECT FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMP_ID FROM ADMIN WHERE EMP_ID=?");
 			stmt.setInt(1, personid);
@@ -88,6 +88,7 @@ public class admin_home {
 				System.out.println("D.O.B. :-> " + rs.getString("BIRTH"));
 				System.out.println("Employee ID :-> " + rs.getString("EMP_ID"));
 			}
+			System.out.println("Press 0 to go back");
 			int choice = sc.nextInt();
 			if (choice == 0) {
 				adminHome(conn, personid);
@@ -100,7 +101,7 @@ public class admin_home {
 	public static void enrollNewStudent(Connection conn, int personid)
 			throws ParseException, SQLException, InterruptedException {
 		try {
-			System.out.println("----Enrolling New Student----");
+			System.out.println("--------------------------Enrolling New Student--------------------------");
 			System.out.println("Enter Student ID :--> ");
 			int stud_id = sc.nextInt();
 			System.out.println("Enter Student's First Name :--> ");
@@ -156,6 +157,7 @@ public class admin_home {
 
 	public static void viewStudentDetails(Connection conn, int personid) {
 		try {
+			System.out.println("--------------------------View Student Details--------------------------");
 			System.out.println("Enter Student ID :-> ");
 			int stud_id = sc.nextInt();
 
@@ -178,8 +180,9 @@ public class admin_home {
 					System.out.println("Amount Owed :-> " + rs.getString("BILLAMOUNT"));
 					System.out.println("GPA :-> " + rs.getString("GPA"));
 				}
-				System.out.println("Press 0 to go back.");
-				System.out.println("Press 1 to enter grades");
+				System.out.println("------------------------------------------------------");
+				System.out.println("Press 0 to go back");
+				System.out.println("Press 1 to enter grades:->");
 				int choice = sc.nextInt();
 				if (choice == 0) {
 					adminHome(conn, personid);
@@ -201,6 +204,7 @@ public class admin_home {
 	
 	public static void menuViewAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
 		// main menu for view/add ccourse
+		System.out.println("----------------------------View/Add Course----------------------------");
 		System.out.println("Select appropriate option");
 		System.out.println("0. Go back to previous menu");
 		System.out.println("1. View course");
@@ -217,7 +221,8 @@ public class admin_home {
 	
 	public static void adminAddCourse(Connection conn, int personid) throws ParseException, SQLException, InterruptedException {
 	// Admin enters the course details.
-	System.out.println("1. Enter Course ID:-> ");
+		System.out.println("--------------------------Add Course--------------------------");
+	System.out.println("1. Enter Course ID (e.g. CSC540) :-> ");
 	//dount here for the course ID. Entering as CSC111 or just 111? confirm once
 	String course_id=sc.next();
 	System.out.println("2. Enter Course name:-> ");
@@ -240,14 +245,14 @@ public class admin_home {
 		pre_req = 1;
 	}
 
-	System.out.println("7. Enter if special approval required:->(0/1) ");
+	System.out.println("7. Enter if special approval required(0/1):-> ");
 	int approval_required=sc.nextInt();
 	int min_credit, max_credit;
 	if(approval_required==1){
 		//then only ask for min & max credits.
-		System.out.println("8. Enter min_credit for the course:-> ");
+		System.out.println("8. Enter min_credit for the course (e.g. 3):-> ");
 		min_credit=sc.nextInt();
-		System.out.println("9. Enter max_credit for the course:-> ");
+		System.out.println("9. Enter max_credit for the course (e.g. 4):-> ");
 		max_credit=sc.nextInt();
 	}else{
 		//enter the number of credits for that course.
@@ -313,6 +318,7 @@ public class admin_home {
 public static void adminViewCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 	// Admin enters the courseID and system shows all course details
 	try{
+		System.out.println("--------------------------View Course--------------------------");
 		System.out.println("Enter the course ID:--> ");
 		String course_id = sc.next();
 		PreparedStatement stmt = conn.prepareStatement("SELECT LISTAGG(PRE_REQ_COURSES,',') WITHIN GROUP (ORDER BY CID) AS PREREQ FROM PRE_REQ WHERE CID=?");
@@ -356,6 +362,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 
 	public static void menuViewAddClass(Connection conn, int personid) {
 		try {
+			System.out.println("----------------------------View/Add Course Offering (class) ----------------------------");
 			System.out.println("Select appropriate option");
 			System.out.println("0. Go back to previous menu");
 			System.out.println("1. View Class");
@@ -379,17 +386,9 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	public static void adminViewClass(Connection conn, int personid) {
 
 		try {
+			System.out.println("----------------------------View Class Page----------------------------");
 			System.out.println("Enter the course ID");
-			;
 			String course_id = sc.next();
-			System.out.println("Class ID (can be multiple for single course) :-> ");
-			System.out.println("Semester ");
-			System.out.println("faculty name:-> ");
-			System.out.println("Days of the week (e.g. MW) :-> ");
-			System.out.println("Class start time:-> ");
-			System.out.println("Class end time:-> ");
-			System.out.println("Class size:-> ");
-			System.out.println("Wait list size:-> ");
 
 			PreparedStatement stmt = conn.prepareStatement(
 					"SELECT CLASS_ID,SEMESTER,FAC_NAME,DAYS,START_TIME,END_TIME,CAPACITY,WAITLIST_CAPACITY FROM"
@@ -412,7 +411,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 					System.out.println("Class Size :-> " + rs.getString("CAPACITY"));
 					System.out.println("Wait list size :-> " + rs.getString("WAITLIST_CAPACITY"));
 				}
-				System.out.println("Press 0 to go back.");
+				System.out.println("Press 0 to go back:-> ");
 				int choice = sc.nextInt();
 				if (choice == 0) {
 					adminHome(conn, personid);
@@ -427,7 +426,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	public static void adminAddClass(Connection conn, int personid) {
 
 		try {
-			System.out.println("----Admin Enter Class Page----");
+			System.out.println("----------------------------Create Class Page----------------------------");
 
 			System.out.println("Enter course ID (e.g. CSC111) :-> ");
 			String course_id = sc.next();
@@ -437,7 +436,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			String fac_name = sc.next();
 			System.out.println("Enter Days of the week (e.g. MW) :-> ");
 			String schedule = sc.next();
-			System.out.println("Enter Class start time:-> ");
+			System.out.println("Enter Class start time (e.g. 1:00PM):-> ");
 			String s_time = sc.next();
 			System.out.println("Enter Class end time:-> ");
 			String e_time = sc.next();
@@ -468,7 +467,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		}
 	}
 	
-	public static void specialEnrollmentReq(Connection conn, int personid) throws SQLException {
+	public static void specialEnrollmentReq(Connection conn, int personid) throws SQLException, InterruptedException {
 		// No input is required here. Directly write the SQL query here and show
 		// all the special enrollment request with only status
 		// as "pending". Once all pending requests are displayed on screen.
@@ -477,98 +476,106 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		// with that status.
 		// Please, write the query to display the requests first then we can
 		// think of approving/rejecting it.
+		System.out.println("----------------------------View/Approve Special Permission Requests----------------------------");
 		PreparedStatement stmt1 = conn.prepareStatement("SELECT * FROM SPECIAL_PERMISSION WHERE STATUS='PENDING'");
 		ResultSet rs=stmt1.executeQuery();
-		System.out.println("Press 0 to go back to previous menu");
-		System.out.println("Enter the SPCL_ID that you would like to approve/reject:->");
+		//System.out.println("Enter the SPCL_ID that you would like to approve/reject:->");
+		boolean flag=false;
 		while(rs.next()){
 			System.out.print("Special permisison ID:->"+rs.getInt("SPCL_PERM_ID"));
 			System.out.print("| SID:->"+rs.getInt("SID"));
 			System.out.println("| Class_ID:->"+rs.getInt("CLASS_ID"));
+			flag=true;
 		}
-		System.out.println("Enter the SPCL_ID that you would like to approve/reject:->");
-		int spcl_id=sc.nextInt();
-		
-		PreparedStatement globl_stmt = conn.prepareStatement(
-				"SELECT * FROM GLOBAL_VAR");
-		ResultSet rs1 = globl_stmt.executeQuery();
-		String sem="";
-		while(rs1.next()){
-			System.out.println("SEMESTER->"+rs1.getString("SEMESTER"));
-			sem=rs1.getString("SEMESTER");
-		}
-		//fetch the values of that special permission
-		PreparedStatement stmt4 = conn.prepareStatement("SELECT * FROM SPECIAL_PERMISSION WHERE SPCL_PERM_ID =?");
-		stmt4.setInt(1, spcl_id);
-		ResultSet rs4=stmt4.executeQuery();
-		int stud_id=0;
-		int class_id=0;
-		while(rs4.next()){
-			stud_id=rs4.getInt("SID");
-			class_id=rs4.getInt("CLASS_ID");
-		}//end of values of that stmt
-		System.out.println("Student id"+stud_id);
-		System.out.println("Class ID"+class_id);
-		System.out.println("Would like to reject/approve(0/1) special permission "+spcl_id+"? (e.g. 0,1)");
-		int decision=sc.nextInt();
-		
-		if(decision==1){
-			//request is approved:1
-			//for that SID and class_ID change the status from pending to approved in enrollment
-			//decrease the class size by 1
-			System.out.println("Accept");
-			PreparedStatement stmt7 = conn.prepareStatement("UPDATE ENROLLMENT SET STATUS='Enrolled' WHERE SID=? AND CLASS_ID=?"
-					+ " AND STATUS='Pending' AND SEMESTER=?");
-			stmt7.setInt(1, stud_id);
-			stmt7.setInt(2,class_id );
-			stmt7.setString(3, sem);
-			stmt7.executeUpdate();
-			System.out.println("Done..");
-			DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-			Calendar calobj = Calendar.getInstance();
-		       System.out.println(df.format(calobj.getTime()));
-			PreparedStatement stmt8 = conn.prepareStatement("Update special_permission set status = 'APPROVED', APPROVED_BY=?"
-					+ ", APPROVED_ON = ? "
-					+ "WHERE SID=? AND CLASS_ID=? "
-					+ " AND STATUS='PENDING'");
-			stmt8.setInt(1, personid);
-			stmt8.setString(2, String.valueOf(df.format(calobj.getTime())));
-			stmt8.setInt(3, stud_id);
-			stmt8.setInt(4,class_id );
-			stmt8.executeUpdate();
-			System.out.println("Status is approved");
+		if(flag){
+			System.out.println("Enter the SPCL_ID that you would like to approve/reject:->");
+			int spcl_id=sc.nextInt();
+			
+			PreparedStatement globl_stmt = conn.prepareStatement(
+					"SELECT * FROM GLOBAL_VAR");
+			ResultSet rs1 = globl_stmt.executeQuery();
+			String sem="";
+			while(rs1.next()){
+				System.out.println("SEMESTER->"+rs1.getString("SEMESTER"));
+				sem=rs1.getString("SEMESTER");
+			}
+			//fetch the values of that special permission
+			PreparedStatement stmt4 = conn.prepareStatement("SELECT * FROM SPECIAL_PERMISSION WHERE SPCL_PERM_ID =?");
+			stmt4.setInt(1, spcl_id);
+			ResultSet rs4=stmt4.executeQuery();
+			int stud_id=0;
+			int class_id=0;
+			while(rs4.next()){
+				stud_id=rs4.getInt("SID");
+				class_id=rs4.getInt("CLASS_ID");
+			}//end of values of that stmt
+			System.out.println("Student id"+stud_id);
+			System.out.println("Class ID"+class_id);
+			System.out.println("Would like to reject/approve(0/1) special permission "+spcl_id+"? (e.g. 0,1)");
+			int decision=sc.nextInt();
+			
+			if(decision==1){
+				//request is approved:1
+				//for that SID and class_ID change the status from pending to approved in enrollment
+				//decrease the class size by 1
+				//System.out.println("Accept");
+				PreparedStatement stmt7 = conn.prepareStatement("UPDATE ENROLLMENT SET STATUS='Enrolled' WHERE SID=? AND CLASS_ID=?"
+						+ " AND STATUS='Pending' AND SEMESTER=?");
+				stmt7.setInt(1, stud_id);
+				stmt7.setInt(2,class_id );
+				stmt7.setString(3, sem);
+				stmt7.executeUpdate();
+				//System.out.println("Done..");
+				DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+				Calendar calobj = Calendar.getInstance();
+			      // System.out.println(df.format(calobj.getTime()));
+				PreparedStatement stmt8 = conn.prepareStatement("Update special_permission set status = 'APPROVED', APPROVED_BY=?"
+						+ ", APPROVED_ON = ? "
+						+ "WHERE SID=? AND CLASS_ID=? "
+						+ " AND STATUS='PENDING'");
+				stmt8.setInt(1, personid);
+				stmt8.setString(2, String.valueOf(df.format(calobj.getTime())));
+				stmt8.setInt(3, stud_id);
+				stmt8.setInt(4,class_id );
+				stmt8.executeUpdate();
+				//System.out.println("Status is approved");
+			}else{
+				//request is rejected:0
+				//Start: for that SID and class_ID change the status from pending to approved in enrollment
+				//System.out.println("Reject");
+				PreparedStatement stmt2 = conn.prepareStatement("UPDATE ENROLLMENT SET STATUS='Rejected' WHERE SID=? AND CLASS_ID=?"
+						+ " AND STATUS='Pending' AND SEMESTER=?");
+				stmt2.setInt(1, stud_id);
+				stmt2.setInt(2,class_id );
+				stmt2.setString(3, sem);
+				stmt2.executeUpdate();
+				//End: for that SID and class_ID change the status from pending to approved in enrollment
+				//Start:delete that entry from special_permission table.
+				PreparedStatement stmt5 = conn.prepareStatement("DELETE special_permission WHERE SID=? AND CLASS_ID=? "
+						+ " AND STATUS='PENDING'");
+				stmt5.setInt(1, stud_id);
+				stmt5.setInt(2,class_id );
+				stmt5.executeUpdate();
+				//End::delete that entry from special_permission table.
+			}
+			System.out.println("Request status changed");
+			System.out.println("Enter 0 to go back to previous menu");
+			System.out.println("Enter 1 to approve/reject additional requests");
+			int next_step=sc.nextInt();
+			if(next_step==0)adminHome(conn,personid);
+			else specialEnrollmentReq(conn,personid);
 		}else{
-			//request is rejected:0
-			//Start: for that SID and class_ID change the status from pending to approved in enrollment
-			System.out.println("Reject");
-			PreparedStatement stmt2 = conn.prepareStatement("UPDATE ENROLLMENT SET STATUS='Rejected' WHERE SID=? AND CLASS_ID=?"
-					+ " AND STATUS='Pending' AND SEMESTER=?");
-			stmt2.setInt(1, stud_id);
-			stmt2.setInt(2,class_id );
-			stmt2.setString(3, sem);
-			stmt2.executeUpdate();
-			System.out.println("Done..");
-			//End: for that SID and class_ID change the status from pending to approved in enrollment
-			//Start:delete that entry from special_permission table.
-			PreparedStatement stmt5 = conn.prepareStatement("DELETE special_permission WHERE SID=? AND CLASS_ID=? "
-					+ " AND STATUS='PENDING'");
-			stmt5.setInt(1, stud_id);
-			stmt5.setInt(2,class_id );
-			stmt5.executeUpdate();
-			//End::delete that entry from special_permission table.
+			System.out.println("No More pending requests to Approve/Reject");
+			TimeUnit.SECONDS.sleep(2);
+			System.out.println("Redirecting back to home page");
+			TimeUnit.SECONDS.sleep(2);
+			adminHome(conn, personid);
 		}
-		System.out.println("Request status changed");
-		System.out.println("Enter 0 to go back to previous menu");
-		System.out.println("Enter 1 to approve/reject additional requests");
-		int next_step=sc.nextInt();
-		if(next_step==0)adminHome(conn,personid);
-		else specialEnrollmentReq(conn,personid);
 		
 	}
 	
-
 	public static void addGrades(Connection conn, int personid, int studentid) {
-		System.out.println("Entering grades for Student id:"+studentid);
+		System.out.println("Entering grades for Student id:->"+studentid);
 		//view courses from enrollment for current student
 		try {
 			//Get current semester from global_var table
@@ -607,9 +614,11 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				System.out.println("-------------------------------------------------------------------------------------------------------");
 			}//closing for rs
 			if(rsEmpty){
-				System.out.println("Student is not enrolled in any class.. Press 0 to go back to previous menu");
+				System.out.println("Student is not enrolled in any class. \n"
+						+ "Press 0 to go back to previous menu");
 			}else{
-				System.out.println("Select class id to enter/modify grade.. Press 0 to go back to previous menu");
+				System.out.println("Select class id to enter/modify grade. \n"
+						+ "Press 0 to go back to previous menu");
 			}
 			
 			int choice = sc.nextInt();
@@ -618,7 +627,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			}
 			else{
 				//for that classid, change the grade to the mentioned grade by admin
-				System.out.println("Enter new grade: ");
+				System.out.println("Enter new grade: (e.g. A+ ");
 				String newGrade = sc.next();
 				stmt = conn.prepareStatement(
 				"UPDATE ENROLLMENT SET GRADE = ? WHERE SID=? AND CLASS_ID=?");
@@ -627,7 +636,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				stmt.setInt(3, choice); //class id is entered as a choice 
 				stmt.executeUpdate();
 				System.out.println("Grades updated successfully");
-				System.out.println("----------------------------------------------------------");
+				System.out.println("-----------------------------------------------------------------------------------");
 				//Procedure update_gpa will be called to update the GPA of student.
 				CallableStatement cStmt = conn.prepareCall("{call update_gpa(?)}");
 				cStmt.setInt(1, studentid);
@@ -646,7 +655,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("Do you want to enforce deadline?(Y/N): ");
 		try{
 			String input = sc.next();
-			if(input.equals("Y")){
+			if(input.toLowerCase().equals("y")){
 			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = ?");
 			st.setInt(1, 1);
 			st.executeUpdate();

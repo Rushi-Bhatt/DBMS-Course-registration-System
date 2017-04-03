@@ -44,11 +44,11 @@ public class student_home {
 		ResultSet rs = globl_stmt.executeQuery();
 		int deadline_enforced=0;
 		while(rs.next()){
-			System.out.println("Deadline is enforced or not:->"+rs.getInt("DEADLINE_ENFORCED"));
+			//System.out.println("Deadline is enforced or not:->"+rs.getInt("DEADLINE_ENFORCED"));
 			deadline_enforced=rs.getInt("DEADLINE_ENFORCED");
 		}
 
-		System.out.println("-----Welcome Student------");
+		System.out.println("----------------------------Welcome Student----------------------------");
 		System.out.println("1. View profile");
 		System.out.println("2. Edit Profile");
 		System.out.println("3. View All Courses");
@@ -115,8 +115,8 @@ public class student_home {
 	public static void viewOwnProfile(Connection conn, int personid) {
 		// TODO Auto-generated method stub
 		try {
-			System.out.println("View your own profile");
-			System.out.println("Press 0 to go back");
+			System.out.println("----------------------Your Profile Information--------------------");
+		
 			PreparedStatement stmt = conn.prepareStatement(
 					"SELECT  SID,FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMAIL,PHONE,ADDRESS,STUDENT_SPECIAL_ID FROM STUDENT WHERE SID=?");
 			stmt.setInt(1, personid);
@@ -140,6 +140,7 @@ public class student_home {
 					System.out.println("Residency :-> " + rs1.getString("RESIDENCY"));
 				}
 			}
+			System.out.println("Press 0 to go back");
 			int choice = sc.nextInt();
 			if (choice == 0) {
 				studentHome(conn, personid);
@@ -153,7 +154,7 @@ public class student_home {
 		// TODO Auto-generated method stub
 		//
 		try {
-			System.out.println("Your profile Information");
+			System.out.println("----------------------Edit your profile--------------------");
 			PreparedStatement stmt = conn.prepareStatement(
 					"SELECT  FNAME,LNAME,TO_CHAR(DOB,'dd-MON-yyyy') as BIRTH,EMAIL,PHONE,ADDRESS FROM STUDENT WHERE SID=?");
 			stmt.setInt(1, personid);
@@ -255,9 +256,9 @@ public class student_home {
 	public static void viewAllCourses(Connection conn, int personid) {
 		// Show all courses for current semester.
 		try {
-			System.out.println("All Available Courses for this semester:");
+			System.out.println("--------------------All Available Courses for this Semester---------------");
 			//Get current semester from global_var table
-			PreparedStatement stmt1 = conn.prepareStatement("SELECT SEMESTER FROM GLOBAL_VAR");
+			PreparedStatement stmt1 = conn.prepareStatement("SELECT * FROM GLOBAL_VAR");
 			ResultSet rs1 = stmt1.executeQuery();
 			while(rs1.next()){
 				String semester = rs1.getString("SEMESTER");
@@ -300,12 +301,13 @@ public class student_home {
 	public static void enrollCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 		
 	//get current semester
+		System.out.println("--------------------------Enroll Course-----------------------");
 			PreparedStatement globl_stmt = conn.prepareStatement(
 					"SELECT * FROM GLOBAL_VAR");
 			ResultSet rs1 = globl_stmt.executeQuery();
 			String sem="";
 			while(rs1.next()){
-				System.out.println("SEMESTER->"+rs1.getString("SEMESTER"));
+				//System.out.println("SEMESTER->"+rs1.getString("SEMESTER"));
 				sem=rs1.getString("SEMESTER");
 			}
 			// Enroll for the course.
@@ -348,10 +350,10 @@ public class student_home {
 			ResultSet spcl_perm_rs=spcl_perm_stmt.executeQuery();
 			int spcl_perm=0;
 			while(spcl_perm_rs.next()){
-				System.out.println("Values here are "+spcl_perm_rs.getInt("SP_PERMISSION"));
+				//System.out.println("Values here are "+spcl_perm_rs.getInt("SP_PERMISSION"));
 				spcl_perm=spcl_perm_rs.getInt("SP_PERMISSION");
 			}
-			System.out.println("Course trying to enroll is worth"+spcl_perm);
+			//System.out.println("Course trying to enroll is worth"+spcl_perm);
 			int credits=0;
 			if(spcl_perm==1){
 				System.out.println("Enter the number of credits that you would like to enroll for:-> ");
@@ -404,7 +406,7 @@ public class student_home {
 				System.out.println("Class is already full. Would you like to be placed on waitlist (Y/N)?:->");
 				String wait_list_choice=sc.next();
 				if(wait_list_choice.equals("Y")){
-					PreparedStatement pre_req_stmt3 = conn.prepareStatement("Insert into enrollment(Sid, class_id, status, semester, credit"
+					PreparedStatement pre_req_stmt3 = conn.prepareStatement("Insert into enrollment(Sid, class_id, status, semester, credit)"
 							+ "values(?,?,'Waitlisted',?,?)");
 					pre_req_stmt3.setInt(1,personid);
 					pre_req_stmt3.setInt(2, class_id);
@@ -464,7 +466,7 @@ public static boolean checkCredit(Connection conn, int personid, String sem, int
 	ResultSet rs_spcl_id = specil_id_stmt.executeQuery();
 	int st_spcl_id=0;
 	while(rs_spcl_id.next()){
-		System.out.println("Student special ID is:->"+rs_spcl_id.getInt("STUDENT_SPECIAL_ID"));
+		//System.out.println("Student special ID is:->"+rs_spcl_id.getInt("STUDENT_SPECIAL_ID"));
 		st_spcl_id=rs_spcl_id.getInt("STUDENT_SPECIAL_ID");
 	}
 	PreparedStatement max_credit_stmt = conn.prepareStatement(
@@ -473,7 +475,7 @@ public static boolean checkCredit(Connection conn, int personid, String sem, int
 	ResultSet rs_max_credit = max_credit_stmt.executeQuery();
 	int max_credit_limit=0;
 	while(rs_max_credit.next()){
-		System.out.println("Max credits allowed for this students are"+rs_max_credit.getInt("MAX_CREDIT"));
+		//System.out.println("Max credits allowed for this students are"+rs_max_credit.getInt("MAX_CREDIT"));
 		max_credit_limit=rs_max_credit.getInt("MAX_CREDIT");
 	}
 	//We have now max_credit_limit for this student
@@ -490,7 +492,7 @@ public static boolean checkCredit(Connection conn, int personid, String sem, int
 	credit_stmt.setString(2, sem);
 	credit_stmt.setInt(3, personid);
 	ResultSet max_credit_enroll = credit_stmt.executeQuery();
-	System.out.println("That query is executed");
+	//System.out.println("That query is executed");
 	int max_credit_limit1 =  0;
 	
 		while(max_credit_enroll.next()){
@@ -501,7 +503,7 @@ public static boolean checkCredit(Connection conn, int personid, String sem, int
 			
 		}
 	
-	System.out.println("Credits so far"+max_credit_limit1);
+	//System.out.println("Credits so far"+max_credit_limit1);
 	PreparedStatement curr_credit_stmt = conn.prepareStatement(
 			"SELECT MAX_CREDIT,MIN_CREDIT FROM course,class WHERE COURSE.CID = CLASS.CID AND CLASS.class_id=?");
 	curr_credit_stmt.setInt(1, class_id);
@@ -513,7 +515,7 @@ public static boolean checkCredit(Connection conn, int personid, String sem, int
 	
 	//check for variable credit logic
 	if(credits!=0)credit=credits;
-	System.out.println("Course trying to enroll is worth"+credit);
+	//System.out.println("Course trying to enroll is worth"+credit);
 	if(max_credit_limit1 +credit> max_credit_limit){
 		return false;
 	}
@@ -538,7 +540,7 @@ public static boolean checkCapacity(Connection conn, int personid, String sem, i
 	while(max_class_capacity.next()){
 		max_capacity=max_class_capacity.getInt("CAPACITY");
 	}
-	System.out.println("Maximum class capacity is :->"+max_capacity);
+	//System.out.println("Maximum class capacity is :->"+max_capacity);
 	if(max_capacity<=0){
 		return false;
 //		System.out.println("Class is already full. Would you like to be placed on waitlist (Y/N)?:->");
@@ -557,7 +559,7 @@ public static boolean checkPreReq(Connection conn, int personid, String sem, Str
 	//Start of pre-req checking : pre-reqs met or not
 	//1. course ID from class
 	//2. person_id
-	System.out.println("checkprereq");
+	//System.out.println("checkprereq");
 	PreparedStatement pre_req_stmt = conn.prepareStatement("SELECT "
 			+ "(SELECT COUNT(*) FROM PRE_REQ P WHERE P.CID=?) - "
 			+ "(SELECT COUNT(*) FROM ENROLLMENT,CLASS,COURSE WHERE COURSE.CID=CLASS.CID AND CLASS.CLASS_ID = ENROLLMENT.CLASS_ID  AND ENROLLMENT.SID=?"
@@ -571,7 +573,7 @@ public static boolean checkPreReq(Connection conn, int personid, String sem, Str
 	ResultSet pre_req_rs = pre_req_stmt.executeQuery();
 	int resultcount=0;
 	while(pre_req_rs.next()){
-		System.out.println("output"+pre_req_rs.getInt("TOTAL_COUNT"));
+		//System.out.println("output"+pre_req_rs.getInt("TOTAL_COUNT"));
 		resultcount=pre_req_rs.getInt("TOTAL_COUNT");
 	}
 	boolean pre_req_met;
@@ -589,7 +591,7 @@ public static boolean checkPreReq(Connection conn, int personid, String sem, Str
 public static boolean checkTime(Connection conn, int personid, String sem, int class_id) throws SQLException{
 	//check if there's clash of days and times
 	//get the days of the class 
-	System.out.println("checkprereqtime");
+	//System.out.println("checkprereqtime");
 
 	try{
 	PreparedStatement pre_req_stmt1 = conn.prepareStatement("select days, start_time, end_time from class where class_id = ?");
@@ -660,7 +662,7 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 	while(gpa_rs.next()){
 		curr_gpa=gpa_rs.getFloat("GPA");
 	}
-	System.out.println("Current GPA of student is :->"+curr_gpa);
+	//System.out.println("Current GPA of student is :->"+curr_gpa);
 	
 	//logic for GPA requirement of class
 	float course_gpa_req = 0;
@@ -671,7 +673,7 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 	while(course_gpa_rs.next()){
 		course_gpa_req=course_gpa_rs.getFloat("GPA_REQ");
 	}
-	System.out.println("Course GPA  is :->"+course_gpa_req);
+	//System.out.println("Course GPA  is :->"+course_gpa_req);
 	if(curr_gpa>=course_gpa_req)return true;
 	else return false;
 	
@@ -682,7 +684,7 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 		//view courses from enrollment for current semester
 		try {
 			//Get current semester from global_var table
-			PreparedStatement stmt = conn.prepareStatement("SELECT SEMESTER FROM GLOBAL_VAR");
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM GLOBAL_VAR");
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()){ //for each semester
 				String semester = rs.getString("SEMESTER");
@@ -739,7 +741,8 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 	public static void dropCourse(Connection conn, int personid){
 		try {
 			//Get current semester from global_var table
-			PreparedStatement stmt = conn.prepareStatement("SELECT SEMESTER FROM GLOBAL_VAR");
+			System.out.println("-----------------------------------------Drop Course-----------------------------------------");
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM GLOBAL_VAR");
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()){ //for each semester
 				String semester = rs.getString("SEMESTER");
@@ -777,12 +780,13 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 	
 						System.out.print(",  Faculty name :-> " + rs2.getString("FAC_NAME"));
 						System.out.print(",  Days :-> " + rs2.getString("DAYS"));
-						System.out.println(",  Time :-> " + rs2.getString("START_TIME")+" -- "+rs2.getString("END_TIME"));		
+						System.out.println(",  Time :-> " + rs2.getString("START_TIME")+" -- "+rs2.getString("END_TIME"));	
+						System.out.println("-------------------------------------------------------------------------------------------------------------------------");
 					} //closing for rs2	
 				} //closing for rs1
 			}//closing for rs
 			System.out.println("Choose the ClassId you want to drop: ");
-			System.out.println("Enter 0 to go back to the previous menu: ");
+			System.out.println("0. to go back to the previous menu: ");
 			//go back to previous menu	
 			int cid = sc.nextInt();
 			if (cid == 0) {
@@ -813,9 +817,10 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 						dropPendingCourse(conn, personid, cid);
 					}
 				}//closing first if
+				System.out.println("Dropped Successfully.");
+				dropCourse(conn, personid);
 			}//closing else
-			System.out.println("Dropped Successfully.");
-			dropCourse(conn, personid);
+			
 			
 		} //closing for try
 		catch (Exception ex) {
@@ -968,7 +973,7 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 		//view letter grades and GPA of the student from enrollment and student table respectively
 		try {
 			//Get current semester from global_var table
-			System.out.println("Select which grades do you want to see: ");
+			System.out.println("----------------------------View Grades----------------------------");
 			System.out.println("1.View Letter grades");
 			System.out.println("2.View GPA");
 			System.out.println("Press 0 to go back to previous menu");
