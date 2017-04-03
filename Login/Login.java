@@ -40,7 +40,7 @@ public class Login {
 	public static void userCheck(Connection conn)throws Exception
 	{
 		Scanner scan = new Scanner(System.in);
-		System.out.println("Enter Username:-> ");
+		System.out.println("Enter Username:-> E.g For student Severus Snape with id 111 -> SS111 ");
 		String user = scan.nextLine();
 		System.out.println("Enter Password:-> ");
 		String pwd = scan.nextLine();
