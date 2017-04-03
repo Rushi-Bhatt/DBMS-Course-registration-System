@@ -76,12 +76,17 @@ public class student_home {
 			break;
 		case 4:
 			//Enroll courses
-			if(deadline_enforced==0)enrollCourse(conn,personid);
+			if(deadline_enforced==0)
+				enrollCourse(conn,personid);
+			else
+				System.out.println("Enroll deadline has passed");
 			break;
 		case 5:
 			//Drop course
 			if(deadline_enforced==0)
 				dropCourse(conn,personid);
+			else
+				System.out.println("Drop deadline has passed");
 			//View
 			break;
 		case 6:
@@ -418,9 +423,6 @@ public class student_home {
 			
 	}
 
-
-
-
 public static boolean checkCredit(Connection conn, int personid, String sem, int class_id) throws SQLException{
 	//Code to fetch max_limit_credit
 	try{
@@ -691,7 +693,6 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 			System.out.println(ex);
 		}
 	}
-
 		
 	public static void dropCourse(Connection conn, int personid){
 		try {
@@ -779,7 +780,6 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 			System.out.println(ex);
 		}//closing catch
 	}//closing dropCourse()
-	
 	
 	public static void dropWaitlistedCourse(Connection conn, int personid, int cid) throws SQLException{
 		try{
