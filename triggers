@@ -41,6 +41,29 @@ create or replace trigger del_waitlist_after_update
 	end IF;
    	END;
 
+//Trigger to generate the bill when the student is enrolled
+CREATE OR REPLACE TRIGGER "generate_bill"
+AFTER 
+	INSERT OR 
+	UPDATE OR
+	DELETE
+ON ENROLLMENT
+FOR EACH ROW
+
+DECLARE
+	cost FLOAT(10);
+	ssid NUMBER(30);
+	perCreditRate NUMBER(10);
+BEGIN
+	IF :NEW.STATUS = 'Enrolled' THEN
+	SELECT STUDENT_SPECIAL_ID INTO ssid from student WHERE SID = :NEW.SID;
+	SELECT PER_CREDIT_RATE INTO perCreditRate from student_special WHERE STUDENT_SPECIAL_ID = ssid; 
+	cost:=  perCreditRate * :NEW.CREDIT;
+	INSERT into ACCOUNT VALUES(ACCOUNT_SEQ.NEXTVAL,cost,:NEW.SID);
+	COMMIT;
+	END IF;
+END;
+/
 
 
 //TRIGGER TO INCREASE SPECIAL_PERMISSION_ID
