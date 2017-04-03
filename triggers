@@ -14,6 +14,9 @@ create or replace trigger add_to_waitlist_after_insert
    IF :new.STATUS='Pending' then
    update class set capacity=capacity-1 where class_id = :new.class_id;
    end IF;
+   IF :new.STATUS='Enrolled' then
+   update class set capacity=capacity-1 where class_id = :new.class_id;
+   end IF;
    END;
 
 

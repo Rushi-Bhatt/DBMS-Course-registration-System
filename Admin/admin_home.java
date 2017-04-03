@@ -648,6 +648,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		try{
 			String input = sc.next();
 			if(input.toLowerCase().equals("y")){
+				System.out.println("asdf");
 			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = ?");
 			st.setInt(1, 1);
 			st.executeUpdate();
