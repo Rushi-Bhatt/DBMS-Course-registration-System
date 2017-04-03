@@ -406,7 +406,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			String course_id = sc.next();
 
 			PreparedStatement stmt = conn.prepareStatement(
-					"SELECT CLASS_ID,SEMESTER,FAC_NAME,DAYS,START_TIME,END_TIME,CAPACITY,WAITLIST_CAPACITY FROM"
+					"SELECT CLASS_ID,SEMESTER,FAC_NAME,DAYS,START_TIME,END_TIME,LOCATION,CAPACITY,WAITLIST_CAPACITY FROM"
 							+ " CLASS WHERE CID=?");
 
 			stmt.setString(1, course_id);
@@ -423,6 +423,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 					System.out.println("Days of the Week :-> " + rs.getString("DAYS"));
 					System.out.println("Class Start Time :-> " + rs.getString("START_TIME"));
 					System.out.println("Class End Time :-> " + rs.getString("END_TIME"));
+					System.out.println("Class Location :-> " + rs.getString("LOCATION"));
 					System.out.println("Class Size :-> " + rs.getString("CAPACITY"));
 					System.out.println("Wait list size :-> " + rs.getString("WAITLIST_CAPACITY"));
 				}
@@ -455,21 +456,24 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			String s_time = sc.next();
 			System.out.println("Enter Class end time:-> ");
 			String e_time = sc.next();
+			System.out.println("Enter class location");
+			String loc = sc.next();
 			System.out.println("Enter Class size:-> ");
 			int class_size = sc.nextInt();
 			System.out.println("Enter wait list size:-> ");
 			int wait_size = sc.nextInt();
 
 			PreparedStatement stmt = conn.prepareStatement("INSERT INTO CLASS(CLASS_ID,CID,SEMESTER,FAC_NAME,DAYS,"
-					+ "START_TIME,END_TIME,CAPACITY,WAITLIST_CAPACITY) VALUES(CLASS_SEQ.NEXTVAL,?,?,?,?,?,?,?,?)");
+					+ "START_TIME,END_TIME,LOCATION,CAPACITY,WAITLIST_CAPACITY) VALUES(CLASS_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?)");
 			stmt.setString(1, course_id);
 			stmt.setString(2, sem);
 			stmt.setString(3, fac_name);
 			stmt.setString(4, schedule);
 			stmt.setString(5, s_time);
 			stmt.setString(6, e_time);
-			stmt.setInt(7, class_size);
-			stmt.setInt(8, wait_size);
+			stmt.setString(7, loc);
+			stmt.setInt(8, class_size);
+			stmt.setInt(9, wait_size);
 			stmt.executeUpdate();
 			System.out.println("Class successfully added");
 			System.out.println("Enter 0 to go back to previous menu:-> ");
