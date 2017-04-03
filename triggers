@@ -44,12 +44,11 @@ create or replace trigger del_waitlist_after_update
 	end IF;
    	END;
 
-//Trigger to generate the bill when the student is enrolled
-CREATE OR REPLACE TRIGGER "generate_bill"
+//Trigger to add bill after the insert and update of enrollment
+CREATE OR REPLACE TRIGGER "generate_bill_after_iu"
 AFTER 
 	INSERT OR 
-	UPDATE OR
-	DELETE
+	UPDATE
 ON ENROLLMENT
 FOR EACH ROW
 
@@ -57,17 +56,37 @@ DECLARE
 	cost FLOAT(10);
 	ssid NUMBER(30);
 	perCreditRate NUMBER(10);
+	
 BEGIN
-	IF :NEW.STATUS = 'Enrolled' THEN
-	SELECT STUDENT_SPECIAL_ID INTO ssid from student WHERE SID = :NEW.SID;
-	SELECT PER_CREDIT_RATE INTO perCreditRate from student_special WHERE STUDENT_SPECIAL_ID = ssid; 
-	cost:=  perCreditRate * :NEW.CREDIT;
-	INSERT into ACCOUNT VALUES(ACCOUNT_SEQ.NEXTVAL,cost,:NEW.SID);
-	COMMIT;
-	END IF;
+		IF :NEW.STATUS = 'Enrolled' THEN
+		SELECT STUDENT_SPECIAL_ID INTO ssid from student WHERE SID = :NEW.SID;
+		SELECT PER_CREDIT_RATE INTO perCreditRate from student_special WHERE STUDENT_SPECIAL_ID = ssid; 
+		cost:=  perCreditRate * :NEW.CREDIT;
+		INSERT into ACCOUNT VALUES(ACCOUNT_SEQ.NEXTVAL,cost,:NEW.SID);
+		END IF;	
 END;
 /
 
+//Trigger to delete the bill after student drops a course
+CREATE OR REPLACE TRIGGER "generate_bill_before_d"
+BEFORE DELETE
+ON ENROLLMENT
+FOR EACH ROW
+
+DECLARE
+	cost FLOAT(10);
+	ssid NUMBER(30);
+	perCreditRate NUMBER(10);
+	
+BEGIN
+		IF :OLD.STATUS = 'Enrolled' THEN
+		SELECT STUDENT_SPECIAL_ID INTO ssid from student WHERE SID = :OLD.SID;
+		SELECT PER_CREDIT_RATE INTO perCreditRate from student_special WHERE STUDENT_SPECIAL_ID = ssid; 
+		cost:=  -1*perCreditRate * :OLD.CREDIT;
+		INSERT into ACCOUNT VALUES(ACCOUNT_SEQ.NEXTVAL,cost,:OLD.SID);
+		END IF;	
+END;
+/
 
 //TRIGGER TO INCREASE SPECIAL_PERMISSION_ID
  CREATE OR REPLACE TRIGGER sp_perm_id_inc
@@ -83,6 +102,7 @@ END;
  //Procedure to calculate the GPA: 
 CREATE PROCEDURE update_gpa (student_id NUMBER) AS      
 BEGIN
-UPDATE STUDENT SET GPA = ( SELECT AVG(GRADE_POINTS) from GRADE_MAP,ENROLLMENT        WHERE GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.SID = student_id )  WHERE SID  =  student_id;
+UPDATE STUDENT SET GPA = ( SELECT AVG(GRADE_POINTS) from GRADE_MAP,ENROLLMENT WHERE GRADE_MAP.GRADE = ENROLLMENT.GRADE 
+AND ENROLLMENT.SID = student_id )  WHERE SID  =  student_id;
 END;
  
