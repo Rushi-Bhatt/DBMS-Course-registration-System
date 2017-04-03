@@ -12,7 +12,7 @@ import java.util.*;
 
 public class admin_home {
 	
-	static Scanner sc = new Scanner(System.in).useDelimiter("\\n");
+	static Scanner sc = new Scanner(System.in);
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
@@ -117,11 +117,15 @@ public class admin_home {
 			String address = sc.nextLine();
 			System.out.println("Enter Student's Level(Graduate,Undergraduate) :--> ");
 			String stud_level = sc.next();
+			System.out.println("Enter Student's Department(CS,ECE) :--> ");
+			String stud_department = sc.next();
 			System.out.println("Enter Student's Residency Status(In State,Out Of State,International) :--> ");
 			sc.nextLine();
 			String stud_resi_status = sc.nextLine();
 			System.out.println("Enter amound owned (if any) :--> ");
 			float stud_amount = sc.nextFloat();
+			
+			//Get student special id
 			PreparedStatement stmt = conn
 					.prepareStatement("SELECT STUDENT_SPECIAL_ID FROM STUDENT_SPECIAL WHERE LVL=? AND RESIDENCY=?");
 			stmt.setString(1, stud_level);
@@ -131,8 +135,18 @@ public class admin_home {
 			while (rs.next()) {
 				special_id = rs.getInt("STUDENT_SPECIAL_ID");
 			}
+			//Get did from department name
+			PreparedStatement stmt1 = conn
+					.prepareStatement("SELECT DID FROM DEPARTMENT WHERE DEPT_NAME=?");
+			stmt1.setString(1, stud_department);
+			ResultSet rs1 = stmt1.executeQuery();
+			int did = 0;
+			while (rs1.next()) {
+				did = rs1.getInt("DID");
+			}
+			
 			stmt = conn.prepareStatement(
-					"INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yyyy'),?,?,?)");
+					"INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID,DID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yyyy'),?,?,?,?)");
 			stmt.setInt(1, stud_id);
 			stmt.setString(2, stud_fname);
 			stmt.setString(3, stud_lname);
@@ -140,6 +154,7 @@ public class admin_home {
 			stmt.setString(5, email);
 			stmt.setString(6, address);
 			stmt.setInt(7, special_id);
+			stmt.setInt(8, did);
 			stmt.executeUpdate();
 
 			stmt = conn.prepareStatement("INSERT INTO ACCOUNT(BILL_ID,BILLAMOUNT,SID) VALUES(ACCOUNT_SEQ.NEXTVAL,?,?)");
