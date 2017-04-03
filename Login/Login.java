@@ -18,7 +18,7 @@ public class Login {
 		
 		Connection conn = DBConnection.ConnectDB();
 		Scanner scan = new Scanner(System.in);
-			System.out.println("---------Student Registration---------");
+			System.out.println("----------------------------Student Course Registration System--------------------------");
 			System.out.println("1. Login");
 			System.out.println("2. Exit");
 	        System.out.println("Enter your choice :-> ");
@@ -40,9 +40,9 @@ public class Login {
 	public static void userCheck(Connection conn)throws Exception
 	{
 		Scanner scan = new Scanner(System.in);
-		System.out.println("Enter Username");
+		System.out.println("Enter Username:-> ");
 		String user = scan.nextLine();
-		System.out.println("Enter Password");
+		System.out.println("Enter Password:-> ");
 		String pwd = scan.nextLine();
 		PreparedStatement stmt = conn.prepareStatement("SELECT USERNAME,PASSWORD,ROLE,PERSON_ID FROM USER_LOGIN WHERE USERNAME=?");
 		stmt.setString(1, user);
@@ -62,12 +62,12 @@ public class Login {
         }
         if(role.equals("A"))
         {
-        	System.out.println("Welcome! Here "+username);
+        	//System.out.println("Welcome! Here "+username);
         	admin_home.adminHome(conn,personid);
         }
         else
         {
-        	System.out.println("Welcome! "+username);
+        	//System.out.println("Welcome! "+username);
         	student_home.studentHome(conn, personid);
         }
 	}
