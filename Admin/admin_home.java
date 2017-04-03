@@ -655,7 +655,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("Do you want to enforce deadline?(Y/N): ");
 		try{
 			String input = sc.next();
-			if(input.equals("Y")){
+			if(input.toLowerCase().equals("y")){
 			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = ?");
 			st.setInt(1, 1);
 			st.executeUpdate();

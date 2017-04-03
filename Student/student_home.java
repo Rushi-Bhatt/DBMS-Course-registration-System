@@ -406,7 +406,7 @@ public class student_home {
 				System.out.println("Class is already full. Would you like to be placed on waitlist (Y/N)?:->");
 				String wait_list_choice=sc.next();
 				if(wait_list_choice.equals("Y")){
-					PreparedStatement pre_req_stmt3 = conn.prepareStatement("Insert into enrollment(Sid, class_id, status, semester, credit"
+					PreparedStatement pre_req_stmt3 = conn.prepareStatement("Insert into enrollment(Sid, class_id, status, semester, credit)"
 							+ "values(?,?,'Waitlisted',?,?)");
 					pre_req_stmt3.setInt(1,personid);
 					pre_req_stmt3.setInt(2, class_id);
@@ -817,9 +817,10 @@ public static boolean checkGPA(Connection conn, int personid, String sem, int cl
 						dropPendingCourse(conn, personid, cid);
 					}
 				}//closing first if
+				System.out.println("Dropped Successfully.");
+				dropCourse(conn, personid);
 			}//closing else
-			System.out.println("Dropped Successfully.");
-			dropCourse(conn, personid);
+			
 			
 		} //closing for try
 		catch (Exception ex) {
