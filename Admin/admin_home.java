@@ -12,7 +12,7 @@ import java.util.*;
 
 public class admin_home {
 	
-	static Scanner sc = new Scanner(System.in);
+	static Scanner sc = new Scanner(System.in).useDelimiter("\\n");
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
@@ -24,7 +24,8 @@ public class admin_home {
 			System.out.println("5. View/Add course offering");
 			System.out.println("6. View/Approve Special Enrollment Requests");
 			System.out.println("7. Enforce Add/Drop Deadline");
-			System.out.println("8. Logout");
+			System.out.println("8. Manage Waitlist");
+			System.out.println("9. Logout");
 			System.out.println("Enter your choice :-> ");
 			int admin_choice = sc.nextInt();
 			switch (admin_choice) {
@@ -56,8 +57,12 @@ public class admin_home {
 				// dealing thing
 				break;
 			case 8:
-				System.out.println("Loggin out...");
+				manageWaitlist(conn, personid);
+				break;
+			case 9:
+				System.out.println("Loggin out..");
 				TimeUnit.SECONDS.sleep(3);
+				System.exit(0);
 				break;
 			default:
 				// invalid option selected. Throw back to previous menu.
@@ -235,21 +240,20 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	
 	System.out.println("7. Enter if special approval required:->(0/1) ");
 	int approval_required=sc.nextInt();
-	System.out.println("8. Are credits as a Range of single credit(Y/N):-> ");
-	String range=sc.next();
 	int min_credit, max_credit;
-	if(range.equals("Y")){
-		System.out.println("Enter min_credit for the course:-> ");
+	if(approval_required==1){
+		//then only ask for min & max credits.
+		System.out.println("8. Enter min_credit for the course:-> ");
 		min_credit=sc.nextInt();
-		System.out.println("Enter max_credit for the course:-> ");
+		System.out.println("9. Enter max_credit for the course:-> ");
 		max_credit=sc.nextInt();
 	}else{
-		System.out.println("Enter credits for the course:-> ");
+		//enter the number of credits for that course.
+		System.out.println("8. Enter credits for the course:-> ");
 		max_credit=sc.nextInt();
 		min_credit = max_credit;
-		//this is the single credit value for the course, while updating in the database please
-		//enter this value in both the min_credit and max_credit in the course table database.
 	}
+
 	try{
 	PreparedStatement stmt1 = conn.prepareStatement("SELECT DID from department where DEPT_NAME=?");
 	stmt1.setString(1, dept_name);
@@ -257,7 +261,6 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	int DID=0;
 	if(rs.next()){
 		DID = (rs.getInt("DID"));		
-		
 	}
 	PreparedStatement stmt = conn.prepareStatement("INSERT INTO COURSE(CID, TITLE, DID, SP_PERMISSION, PRE_REQ, LVL, "
 			+ "MIN_CREDIT, MAX_CREDIT, GPA_REQ) VALUES(?,?,?,?,?,?,?,?,?)");
@@ -270,20 +273,27 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	stmt.setInt(7, min_credit);
 	stmt.setInt(8, max_credit);
 	stmt.setFloat(9, gpa_req);
-	
 	stmt.executeUpdate();
-
-	
-	if(pre_req==0){
-		String[] prereq = pre_req_courses.split(",");
-		for(int i=0;i<prereq.length;i++){
+	if(pre_req==1){
+		if(pre_req_courses.contains(","))
+		{
+			String[] prereq = pre_req_courses.split(",");
+			for(int i=0;i<prereq.length;i++)
+			{
+				PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
+				stmt2.setString(1,course_id);
+				stmt2.setString(2, prereq[i]);
+				stmt2.executeQuery();
+			}
+		}
+		else
+		{
 			PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO PRE_REQ VALUES(?,?)");
 			stmt2.setString(1,course_id);
-			stmt2.setString(2, prereq[i]);
+			stmt2.setString(2, pre_req_courses);
 			stmt2.executeQuery();
 		}
 	}
-	
 	
 
 	System.out.println("Course added successfully");
@@ -298,7 +308,6 @@ public static void adminAddCourse(Connection conn, int personid) throws ParseExc
 	//if query is successful, display success message and go back to previous menu.
 	//if query is unsuccessful, display specific error message and go back to previous menu.
 }
-
 public static void adminViewCourse(Connection conn, int personid) throws SQLException, InterruptedException {
 	// Admin enters the courseID and system shows all course details
 	try{
@@ -614,8 +623,11 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				stmt.executeUpdate();
 				System.out.println("Grades updated successfully");
 				System.out.println("----------------------------------------------------------");
-				//Trigger will be called to update the GPA of student.
-				//gpa = select avg(GRADE_POINTS) from GRADE_MAP,ENROLLMENT where GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.sid=200152899 AND ENROLLMENT.GRADE is not null;
+				//Procedure update_gpa will be called to update the GPA of student.
+				CallableStatement cStmt = conn.prepareCall("{call update_gpa(?)}");
+				cStmt.setInt(1, studentid);
+				cStmt.registerOutParameter(1, java.sql.Types.NUMERIC);
+				boolean he = cStmt.execute();
 				addGrades(conn,personid,studentid);
 			}
 		} //closing for try
@@ -630,7 +642,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("Do you want to enforce deadline?(Y/N): ");
 		try{
 			String input = sc.next();
-			if(input.toLowerCase().equals("y")){
+			if(input.equals("Y")){
 			PreparedStatement st = conn.prepareStatement("UPDATE global_Var SET deadline_enforced = ?");
 			st.setInt(1, 1);
 			st.executeUpdate();
@@ -654,4 +666,58 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 		System.out.println("Couldn't perform the action. Error: " + ex);
 	}
 	}
+
+
+	public static void manageWaitlist(Connection conn, int personid) throws SQLException{
+		try{
+			PreparedStatement st = conn.prepareStatement("SELECT * FROM WAIT_LIST");
+			ResultSet rs = st.executeQuery();
+			int sid, class_id, approve;
+			if(!rs.next()){
+				System.out.println("No entries in the waitlist");
+				adminHome(conn,personid);
+			}
+			else{
+				while(rs.next()){
+				System.out.println("SID: -->  " + rs.getInt("SID"));
+				System.out.println("CLASS_ID: -->  " + rs.getInt("CLASS_ID"));
+				}
+				}
+			System.out.println("Enter SID you want to approve/reject:");
+			sid = sc.nextInt();
+			System.out.println("Enter CLASS_ID you want to approve/reject:");
+			class_id = sc.nextInt();
+			System.out.println("Do you want to reject or approve(0/1)?:");
+			approve = sc.nextInt();
+			if(approve==0){
+				PreparedStatement pst = conn.prepareStatement("update enrollment set status='Rejected' where "
+						+ "sid = ? and class_id = ?");
+				pst.setInt(1, sid);
+				pst.setInt(2, class_id);
+				pst.executeUpdate();
+				System.out.println("Successfully rejected");
+			}
+			else{
+				PreparedStatement pst1 = conn.prepareStatement("update enrollment set status='Enrolled' where "
+						+ "sid = ? and class_id = ?");
+				pst1.setInt(1, sid);
+				pst1.setInt(2, class_id);
+				int rs1 = pst1.executeUpdate();
+//				System.out.println("number of rows affected: "+rs1);
+				System.out.println("Successfully enrolled");
+			}
+			System.out.println("Enter 0 to go back, 1 to go to home page");
+			int choice = sc.nextInt();
+			if (choice == 1)
+				adminHome(conn, personid);
+			else
+				manageWaitlist(conn,personid);
+		}
+	catch(Exception ex){
+		System.out.println("Couldn't perform the action. Error: " + ex);
+	}
+	}
+
+
+
 }

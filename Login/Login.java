@@ -53,7 +53,6 @@ public class Login {
 		}
 		String data_pwd = rs.getString("PASSWORD");
         String role = rs.getString("ROLE");
-        System.out.println("Value of role is"+role);
         String username = rs.getString("USERNAME");
         int personid = rs.getInt("PERSON_ID");
         if (!pwd.equals(data_pwd)) 
