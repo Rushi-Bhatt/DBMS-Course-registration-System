@@ -12,7 +12,7 @@ import java.util.*;
 
 public class admin_home {
 	
-	static Scanner sc = new Scanner(System.in).useDelimiter("\\n");
+	static Scanner sc = new Scanner(System.in);
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
