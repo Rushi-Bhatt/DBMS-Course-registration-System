@@ -262,6 +262,7 @@ public class admin_home {
 	}
 
 	try{
+	conn.setAutoCommit(false);
 	PreparedStatement stmt1 = conn.prepareStatement("SELECT DID from department where DEPT_NAME=?");
 	stmt1.setString(1, dept_name);
 	ResultSet rs = stmt1.executeQuery();
@@ -306,11 +307,22 @@ public class admin_home {
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
 	}
-	catch(Exception ex)
+	catch(SQLException ex)
 	{
-		System.out.println("course not added successfully. Error: "+ex);
-		menuViewAddCourse(conn, personid);
+		System.out.println("Course not added successfully. Error: "+ex);
+		if (conn != null) {
+            try {
+                System.err.print("Transaction is being rolled back");
+                conn.rollback();
+            } catch(SQLException exce) {
+            	System.out.println("Course not added successfully. Error: "+exce);
+            }
+        }
 	}
+	finally {
+        conn.setAutoCommit(true);
+        menuViewAddCourse(conn, personid);
+    }
 	//create a query here to add these values in the database table.
 	//if query is successful, display success message and go back to previous menu.
 	//if query is unsuccessful, display specific error message and go back to previous menu.
@@ -435,7 +447,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			String sem = sc.next();
 			System.out.println("Enter faculty name:-> ");
 			String fac_name = sc.next();
-			System.out.println("Enter Days of the week (e.g. MW) :-> ");
+			System.out.println("Enter Days of the week (e.g. M,W) :-> ");
 			String schedule = sc.next();
 			System.out.println("Enter Class start time (e.g. 1:00PM):-> ");
 			String s_time = sc.next();
