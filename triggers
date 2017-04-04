@@ -12,6 +12,7 @@ create or replace trigger add_to_waitlist_after_insert
    update class set waitlist_capacity= waitlist_capacity-1 where class_id = :new.class_id;
    end IF;
    IF :new.STATUS='Pending' then
+   INSERT INTO 
    update class set capacity=capacity-1 where class_id = :new.class_id;
    end IF;
    IF :new.STATUS='Enrolled' then
@@ -27,17 +28,13 @@ create or replace trigger del_waitlist_after_update
     FOR EACH ROW
     DECLARE
     BEGIN
-    IF :new.STATUS='Enrolled' then
-    	IF :old.STATUS='Waitlisted' then
-		delete from wait_list where sid = :old.sid and class_id = :old.class_id;
-    	update class set waitlist_capacity= waitlist_capacity+1, capacity = capacity-1 where class_id = :new.class_id;
-		ELSE
-		update class set capacity = capacity-1 where class_id = :new.class_id;
-		end IF;
-	end IF;
 	IF :new.STATUS='Rejected' AND :old.STATUS='Waitlisted' then
 	delete from wait_list where sid = :old.sid and class_id = :old.class_id;
     update class set waitlist_capacity= waitlist_capacity+1 where class_id = :new.class_id;
+	end IF;
+	IF :new.STATUS='Rejected' AND :old.STATUS='Pending' then
+	delete from special_permission where sid = :old.sid and class_id = :old.class_id;
+    update class set capacity= capacity+1 where class_id = :old.class_id;
 	end IF;
    	END;
 
