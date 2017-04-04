@@ -253,7 +253,6 @@ public class student_home {
 			System.out.println(ex);
 		}
 	}
-
 	public static void viewAllCourses(Connection conn, int personid) {
 		// Show all courses for current semester.
 		try {
@@ -567,12 +566,10 @@ public class student_home {
 		pre_req_stmt.setString(1,course_id);
 		pre_req_stmt.setInt(2,personid);
 		pre_req_stmt.setString(3,sem);
-		pre_req_stmt.setString(4,sem);
-		//pre_req_stmt.setString(1,course_id);
+		pre_req_stmt.setString(4,course_id);
 		ResultSet pre_req_rs = pre_req_stmt.executeQuery();
 		int resultcount=0;
 		while(pre_req_rs.next()){
-			//System.out.println("output"+pre_req_rs.getInt("TOTAL_COUNT"));
 			resultcount=pre_req_rs.getInt("TOTAL_COUNT");
 		}
 		boolean pre_req_met;
@@ -580,8 +577,8 @@ public class student_home {
 			pre_req_met = false;
 		else
 			pre_req_met = true;
-		if(pre_req_met)System.out.println(" Met");
-		else System.out.println("Not met");
+		if(pre_req_met)System.out.println("Pre-requisites Met");
+		else System.out.println("Pre-requisites Not met");
 		return pre_req_met;
 		//end of pre-req checking : pre-reqs met or not
 	
@@ -814,11 +811,6 @@ public class student_home {
 					
 					if(status.toLowerCase().equals("pending")){
 						dropPendingCourse(conn, personid, cid);
-					}
-
-					if(status.toLowerCase().equals("rejected")){
-						System.out.println("Course already rejected");
-						dropCourse(conn, personid);
 					}
 				}//closing first if
 				System.out.println("Dropped Successfully.");
