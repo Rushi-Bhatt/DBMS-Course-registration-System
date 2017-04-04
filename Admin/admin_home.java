@@ -175,11 +175,13 @@ public class admin_home {
 			System.out.println("--------------------------View Student Details--------------------------");
 			System.out.println("Enter Student ID :-> ");
 			int stud_id = sc.nextInt();
-
+			
 			PreparedStatement stmt = conn.prepareStatement(
-					"SELECT S.FNAME FNAME,S.LNAME LNAME,TO_CHAR(S.DOB,'dd-MON-yyyy') as BIRTH,SS.LVL LVL,SS.RESIDENCY RESIDENCY,A.BILLAMOUNT BILLAMOUNT,S.GPA GPA  "
+					"SELECT S.FNAME FNAME,S.LNAME LNAME,TO_CHAR(S.DOB,'dd-MON-yyyy') as BIRTH,SS.LVL LVL,SS.RESIDENCY RESIDENCY,SUM(A.BILLAMOUNT) BILLAMOUNT,S.GPA GPA  "
 							+ "FROM STUDENT S,ACCOUNT A,STUDENT_SPECIAL SS "
-							+ "WHERE S.SID=A.SID AND S.STUDENT_SPECIAL_ID = SS.STUDENT_SPECIAL_ID " + "AND S.SID=?");
+							+ "WHERE S.SID=A.SID AND S.STUDENT_SPECIAL_ID = SS.STUDENT_SPECIAL_ID " + "AND S.SID=? "
+									+ "GROUP BY S.SID,s.FNAME,S.LNAME,S.DOB,SS.LVL,SS.RESIDENCY,S.GPA");
+			
 			stmt.setInt(1, stud_id);
 			ResultSet rs = stmt.executeQuery();
 			if (!rs.next()) {
