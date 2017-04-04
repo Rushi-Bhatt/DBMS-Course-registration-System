@@ -117,11 +117,15 @@ public class admin_home {
 			String address = sc.nextLine();
 			System.out.println("Enter Student's Level(Graduate,Undergraduate) :--> ");
 			String stud_level = sc.next();
+			System.out.println("Enter Student's Department(CS,ECE) :--> ");
+			String stud_department = sc.next();
 			System.out.println("Enter Student's Residency Status(In State,Out Of State,International) :--> ");
 			sc.nextLine();
 			String stud_resi_status = sc.nextLine();
 			System.out.println("Enter amound owned (if any) :--> ");
 			float stud_amount = sc.nextFloat();
+			
+			//Get student special id
 			PreparedStatement stmt = conn
 					.prepareStatement("SELECT STUDENT_SPECIAL_ID FROM STUDENT_SPECIAL WHERE LVL=? AND RESIDENCY=?");
 			stmt.setString(1, stud_level);
@@ -131,8 +135,18 @@ public class admin_home {
 			while (rs.next()) {
 				special_id = rs.getInt("STUDENT_SPECIAL_ID");
 			}
+			//Get did from department name
+			PreparedStatement stmt1 = conn
+					.prepareStatement("SELECT DID FROM DEPARTMENT WHERE DEPT_NAME=?");
+			stmt1.setString(1, stud_department);
+			ResultSet rs1 = stmt1.executeQuery();
+			int did = 0;
+			while (rs1.next()) {
+				did = rs1.getInt("DID");
+			}
+			
 			stmt = conn.prepareStatement(
-					"INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yyyy'),?,?,?)");
+					"INSERT INTO STUDENT(SID,FNAME,LNAME,DOB,EMAIL,ADDRESS,STUDENT_SPECIAL_ID,DID) VALUES(?,?,?,TO_DATE(?,'dd-MON-yyyy'),?,?,?,?)");
 			stmt.setInt(1, stud_id);
 			stmt.setString(2, stud_fname);
 			stmt.setString(3, stud_lname);
@@ -140,6 +154,7 @@ public class admin_home {
 			stmt.setString(5, email);
 			stmt.setString(6, address);
 			stmt.setInt(7, special_id);
+			stmt.setInt(8, did);
 			stmt.executeUpdate();
 
 			stmt = conn.prepareStatement("INSERT INTO ACCOUNT(BILL_ID,BILLAMOUNT,SID) VALUES(ACCOUNT_SEQ.NEXTVAL,?,?)");
@@ -262,6 +277,7 @@ public class admin_home {
 	}
 
 	try{
+	conn.setAutoCommit(false);
 	PreparedStatement stmt1 = conn.prepareStatement("SELECT DID from department where DEPT_NAME=?");
 	stmt1.setString(1, dept_name);
 	ResultSet rs = stmt1.executeQuery();
@@ -306,11 +322,22 @@ public class admin_home {
 	System.out.println("Course added successfully");
 	menuViewAddCourse(conn, personid);
 	}
-	catch(Exception ex)
+	catch(SQLException ex)
 	{
-		System.out.println("course not added successfully. Error: "+ex);
-		menuViewAddCourse(conn, personid);
+		System.out.println("Course not added successfully. Error: "+ex);
+		if (conn != null) {
+            try {
+                System.err.print("Transaction is being rolled back");
+                conn.rollback();
+            } catch(SQLException exce) {
+            	System.out.println("Course not added successfully. Error: "+exce);
+            }
+        }
 	}
+	finally {
+        conn.setAutoCommit(true);
+        menuViewAddCourse(conn, personid);
+    }
 	//create a query here to add these values in the database table.
 	//if query is successful, display success message and go back to previous menu.
 	//if query is unsuccessful, display specific error message and go back to previous menu.
@@ -435,7 +462,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			String sem = sc.next();
 			System.out.println("Enter faculty name:-> ");
 			String fac_name = sc.next();
-			System.out.println("Enter Days of the week (e.g. MW) :-> ");
+			System.out.println("Enter Days of the week (e.g. M,W) :-> ");
 			String schedule = sc.next();
 			System.out.println("Enter Class start time (e.g. 1:00PM):-> ");
 			String s_time = sc.next();

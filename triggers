@@ -20,9 +20,6 @@ create or replace trigger add_to_waitlist_after_insert
    end IF;
    END;
 
-
-
-
 //trigger to manage capacity and waitlist capacity of class, delete entry from waitlist after it has been updated in enrollment
 
 create or replace trigger del_waitlist_after_update
@@ -41,9 +38,53 @@ create or replace trigger del_waitlist_after_update
 	end IF;
    	END;
 
+//Trigger to add bill after the insert and update of enrollment
+CREATE OR REPLACE TRIGGER "generate_bill_after_iu"
+AFTER 
+	INSERT OR 
+	UPDATE
+ON ENROLLMENT
+FOR EACH ROW
+
+DECLARE
+	cost FLOAT(10);
+	ssid NUMBER(30);
+	perCreditRate NUMBER(10);
+	
+BEGIN
+		IF :NEW.STATUS = 'Enrolled' THEN
+		SELECT STUDENT_SPECIAL_ID INTO ssid from student WHERE SID = :NEW.SID;
+		SELECT PER_CREDIT_RATE INTO perCreditRate from student_special WHERE STUDENT_SPECIAL_ID = ssid; 
+		cost:=  perCreditRate * :NEW.CREDIT;
+		INSERT into ACCOUNT VALUES(ACCOUNT_SEQ.NEXTVAL,cost,:NEW.SID);
+		END IF;	
+END;
+/
+
+//Trigger to delete the bill after student drops a course
+CREATE OR REPLACE TRIGGER "generate_bill_before_d"
+BEFORE DELETE
+ON ENROLLMENT
+FOR EACH ROW
+
+DECLARE
+	cost FLOAT(10);
+	ssid NUMBER(30);
+	perCreditRate NUMBER(10);
+	
+BEGIN
+		IF :OLD.STATUS = 'Enrolled' THEN
+		SELECT STUDENT_SPECIAL_ID INTO ssid from student WHERE SID = :OLD.SID;
+		SELECT PER_CREDIT_RATE INTO perCreditRate from student_special WHERE STUDENT_SPECIAL_ID = ssid; 
+		cost:=  -1*perCreditRate * :OLD.CREDIT;
+		INSERT into ACCOUNT VALUES(ACCOUNT_SEQ.NEXTVAL,cost,:OLD.SID);
+		END IF;	
+END;
+/
 
 
 //TRIGGER TO INCREASE SPECIAL_PERMISSION_ID
+
  CREATE OR REPLACE TRIGGER sp_perm_id_inc
   2  BEFORE INSERT ON SPECIAL_PERMISSION
   3  FOR EACH ROW
@@ -55,8 +96,123 @@ create or replace trigger del_waitlist_after_update
   9  /
 
  //Procedure to calculate the GPA: 
+ 
 CREATE PROCEDURE update_gpa (student_id NUMBER) AS      
 BEGIN
-UPDATE STUDENT SET GPA = ( SELECT AVG(GRADE_POINTS) from GRADE_MAP,ENROLLMENT        WHERE GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.SID = student_id )  WHERE SID  =  student_id;
+UPDATE STUDENT SET GPA = ( SELECT AVG(GRADE_POINTS) from GRADE_MAP,ENROLLMENT        
+WHERE GRADE_MAP.GRADE = ENROLLMENT.GRADE AND ENROLLMENT.SID = student_id )  WHERE SID  =  student_id;
+END;
+
+
+// Trigger to input data in user_login when a student is enrolled
+
+CREATE OR REPLACE TRIGGER ENROLL_USER_LOGIN 
+AFTER INSERT ON STUDENT 
+FOR EACH ROW 
+DECLARE 
+username varchar(20); 
+BEGIN 
+username :=  SUBSTR(:NEW.FNAME,1,1) ||''||SUBSTR(:NEW.LNAME,1,1) ||''|| :NEW.SID; 
+INSERT INTO USER_LOGIN 
+( USERNAME, 
+PERSON_ID,PASSWORD, ROLE) VALUES (username, :NEW.SID,:NEW.SID,'S'); 
 END;
  
+// Trigger to input data in user_login when an admin is added
+
+CREATE OR REPLACE TRIGGER ADMIN_USER_LOGIN 
+AFTER INSERT ON ADMIN 
+FOR EACH ROW 
+DECLARE 
+username varchar(20);
+BEGIN 
+username :=  SUBSTR(:NEW.FNAME,1,1) ||''||SUBSTR(:NEW.LNAME,1,1) ||''|| :NEW.EMP_ID; 
+INSERT INTO USER_LOGIN 
+( USERNAME, 
+PERSON_ID,PASSWORD, ROLE) VALUES (username, :NEW.EMP_ID,'hogwarts','A'); 
+END;
+
+
+CREATE OR REPLACE TRIGGER GLOBAL_VAR_TRIGGER 
+AFTER INSERT OR UPDATE ON GLOBAL_VAR 
+FOR EACH ROW 
+BEGIN 
+IF :NEW.DEADLINE_ENFORCED = 1 THEN 
+		GENERATE_BILL_PROCEDURE(:NEW.SEMESTER);  
+		MODIFY_WAITLIST_PROCEDURE(:NEW.SEMESTER);  
+		MODIFY_PENDING_PROCEDURE(:NEW.SEMESTER);  
+END IF;
+END;
+            			
+            			
+// Procedure to drop courses if student has not paid the bill after deadline is enforced
+
+CREATE OR REPLACE PROCEDURE GENERATE_BILL_PROCEDURE 
+(SEM IN VARCHAR2)
+ IS 
+STUDENT_ID NUMBER; 
+CURSOR CUR IS SELECT SID INTO STUDENT_ID FROM ACCOUNT GROUP BY SID HAVING SUM(BILLAMOUNT)>0; 
+BEGIN 
+	FOR STUDENT_ID IN CUR 
+		LOOP 
+			UPDATE ENROLLMENT SET STATUS = 'Rejected' WHERE SID = STUDENT_ID.SID AND SEMESTER = SEM; 
+		END LOOP; 
+END;
+
+// Procedure to drop all waitlisted courses after deadline is enforced
+
+CREATE OR REPLACE PROCEDURE MODIFY_WAITLIST_PROCEDURE 
+(SEM IN VARCHAR2)
+ IS 
+STUDENT_ID NUMBER;
+CLASSID NUMBER; 
+CLASS NUMBER; 
+CNT NUMBER; 
+CURSOR CUR IS SELECT COUNT(*),CLASS_ID FROM ENROLLMENT WHERE SEMESTER = SEM AND STATUS = 'Waitlisted' GROUP BY CLASS_ID;
+CURSOR CUR1 IS SELECT SID,CLASS_ID FROM ENROLLMENT WHERE STATUS = 'Waitlisted'; 
+BEGIN 
+ OPEN CUR;
+		LOOP 
+			FETCH CUR INTO CNT,CLASS; 
+			exit when CUR%notfound;  
+			UPDATE CLASS SET WAITLIST_CAPACITY=WAITLIST_CAPACITY+CNT WHERE CLASS_ID=CLASS AND SEMESTER = SEM; 
+		END LOOP;
+	CLOSE CUR; 
+ OPEN CUR1;
+		LOOP 
+			FETCH CUR1 INTO STUDENT_ID,CLASSID; 
+			exit when CUR1%notfound;  
+			UPDATE ENROLLMENT SET STATUS = 'Rejected' WHERE SID = STUDENT_ID AND CLASS_ID = CLASSID AND SEMESTER = SEM;
+			DELETE FROM WAIT_LIST; 
+		END LOOP;
+	CLOSE CUR; 
+END;
+
+// Procedure to drop all pending status courses after deadline is enforced
+
+CREATE OR REPLACE PROCEDURE MODIFY_PENDING_PROCEDURE 
+(SEM IN VARCHAR2)
+ IS 
+STUDENT_ID NUMBER;
+CLASSID NUMBER; 
+CLASS NUMBER; 
+CNT NUMBER; 
+CURSOR CUR IS SELECT COUNT(*),CLASS_ID FROM ENROLLMENT WHERE SEMESTER = SEM AND STATUS = 'Pending' GROUP BY CLASS_ID;
+CURSOR CUR1 IS SELECT SID,CLASS_ID FROM ENROLLMENT WHERE STATUS = 'Pending'; 
+BEGIN 
+ OPEN CUR;
+		LOOP 
+			FETCH CUR INTO CNT,CLASS;
+			exit when CUR%notfound; 
+			UPDATE CLASS SET CAPACITY=CAPACITY+CNT WHERE CLASS_ID=CLASS AND SEMESTER = SEM; 
+		END LOOP;
+	CLOSE CUR; 
+ OPEN CUR1;
+		LOOP 
+			FETCH CUR1 INTO STUDENT_ID,CLASSID;
+			exit when CUR1%notfound; 
+			UPDATE ENROLLMENT SET STATUS = 'Rejected' WHERE SID = STUDENT_ID AND CLASS_ID = CLASSID AND SEMESTER = SEM;
+			DELETE FROM SPECIAL_PERMISSION WHERE STATUS = 'PENDING'; 
+		END LOOP;
+	CLOSE CUR; 
+END;
