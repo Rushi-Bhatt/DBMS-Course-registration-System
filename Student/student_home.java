@@ -815,6 +815,11 @@ public class student_home {
 					if(status.toLowerCase().equals("pending")){
 						dropPendingCourse(conn, personid, cid);
 					}
+
+					if(status.toLowerCase().equals("rejected")){
+						System.out.println("Course already rejected");
+						dropCourse(conn, personid);
+					}
 				}//closing first if
 				System.out.println("Dropped Successfully.");
 				dropCourse(conn, personid);
