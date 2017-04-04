@@ -470,7 +470,7 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			String s_time = sc.next();
 			System.out.println("Enter Class end time:-> ");
 			String e_time = sc.next();
-			System.out.println("Enter class location");
+			System.out.println("Enter class location:-> ");
 			String loc = sc.next();
 			System.out.println("Enter Class size:-> ");
 			int class_size = sc.nextInt();
@@ -693,6 +693,9 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			st.setInt(1, 1);
 			st.executeUpdate();
 			System.out.println("Successfully enforced the deadline.");
+			System.out.println("1. Courses of Students with Bill Pending dropped");
+			System.out.println("2. Courses of Students in WaitList has been Rejected");
+			System.out.println("3. Courses of Students in Special Permission Pending has been Rejected");
 			System.out.println("Enter 0 to go back to previous menu:-> ");
 			int choice = sc.nextInt();
 			if (choice == 0);
