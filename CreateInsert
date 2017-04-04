@@ -1,0 +1,192 @@
+1. Create Admin Table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE ADMIN
+(EMP_ID VARCHAR(30) NOT NULL primary key,
+FNAME VARCHAR(40) NOT NULL,
+LNAME VARCHAR(40),
+SSN NUMBER(9) NOT NULL UNIQUE,
+DOB DATE,
+PHONE NUMBER(10));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. Create Department Table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE DEPARTMENT 
+(DID NUMBER(3) NOT NULL primary key,
+DEPT_NAME VARCHAR(50) NOT NULL);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3. Create STUDENT_SPECIAL Table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE STUDENT_SPECIAL
+(STUDENT_SPECIAL_ID NUMBER(30) NOT NULL primary key,
+LVL VARCHAR(50) NOT NULL,
+RESIDENCY VARCHAR(50) NOT NULL,
+MIN_CREDIT NUMBER(5) NOT NULL,
+MAX_CREDIT NUMBER(5) NOT NULL,
+PER_CREDIT_RATE NUMBER(10) NOT NULL);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4. Create user_login table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE USER_LOGIN
+(PERSON_ID NUMBER(12) NOT NULL PRIMARY KEY, 
+USERNAME VARCHAR(20) NOT NULL UNIQUE, 
+PASSWORD VARCHAR(20) NOT NULL,
+ROLE VARCHAR(1) NOT NULL);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5. Create Student table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE STUDENT
+(SID NUMBER(20) primary key,
+FNAME VARCHAR(40) NOT NULL,
+LNAME VARCHAR(40),
+EMAIL VARCHAR(40) NOT NULL UNIQUE,
+GPA FLOAT(10) DEFAULT 0.00 ,
+ADDRESS VARCHAR(100) NOT NULL,
+PHONE NUMBER(10),
+DID NUMBER(3),
+DOB DATE,
+FOREIGN KEY(DID) REFERENCES DEPARTMENT(DID),
+STUDENT_SPECIAL_ID NUMBER(30),
+FOREIGN KEY(STUDENT_SPECIAL_ID) REFERENCES STUDENT_SPECIAL(STUDENT_SPECIAL_ID));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6. Create Account Table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE ACCOUNT
+(BILL_ID NUMBER(12) PRIMARY KEY, 
+BILLAMOUNT  FLOAT(10) DEFAULT 0.00,
+SID NUMBER(20) NOT NULL,
+FOREIGN KEY (SID) REFERENCES STUDENT(SID));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+7. Create Course table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Create table COURSE
+( CID VARCHAR(10) PRIMARY KEY,
+TITLE VARCHAR(50) NOT NULL,
+DID NUMBER(3) NOT NULL,
+SP_PERMISSION NUMBER(1) NOT NULL,
+PRE_REQ NUMBER(1) NOT NULL,
+LVL VARCHAR(50) NOT NULL,
+MIN_CREDIT NUMBER(5) NOT NULL,
+MAX_CREDIT NUMBER(5) NOT NULL,
+GPA_REQ FLOAT(10) DEFAULT 0.00,
+FOREIGN KEY (DID) REFERENCES DEPARTMENT(DID));
+
+8. Create Class table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE CLASS
+(CLASS_ID NUMBER(12) PRIMARY KEY, 
+CID  VARCHAR(10) NOT NULL,
+FAC_NAME VARCHAR(25) NOT NULL,
+CAPACITY NUMBER(3) NOT  NULL,
+WAITLIST_CAPACITY NUMBER(3) NOT NULL,
+LOCATION VARCHAR(40) DEFAULT 'TBD',
+DAYS VARCHAR(10) NOT NULL,
+START_TIME VARCHAR(40) NOT NULL,
+END_TIME VARCHAR(40) NOT NULL,
+SEMESTER VARCHAR(10) NOT NULL,
+ENR_START_DATE DATE NOT NULL,
+ENR_END_DATE DATE NOT NULL,
+FOREIGN KEY (CID) REFERENCES COURSE(CID));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+9. Create Special_permission table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE SPECIAL_PERMISSION
+( SID NUMBER(20) NOT NULL,
+CLASS_ID NUMBER(12) NOT NULL,
+STATUS VARCHAR(50) DEFAULT 'PENDING',
+APPROVED_BY VARCHAR(50),
+APPROVED_ON NUMBER(5),
+FOREIGN KEY (SID) REFERENCES STUDENT(SID),
+FOREIGN KEY (CLASS_ID) REFERENCES CLASS(CLASS_ID),
+SPCL_PERM_ID NUMBER(20) PRIMARY KEY);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+10. Create Wait_list table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Create table WAIT_LIST
+( SID NUMBER(20) NOT NULL,
+CLASS_ID NUMBER(12) NOT NULL,
+FOREIGN KEY (SID) REFERENCES STUDENT(SID),
+FOREIGN KEY (CLASS_ID) REFERENCES CLASS(CLASS_ID));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+11. Create PRE_REQ table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Create table PRE_REQ
+( CID VARCHAR(10) NOT NULL,
+PRE_REQ_COURSES VARCHAR(50) NOT NULL,
+FOREIGN KEY (CID) REFERENCES COURSE(CID));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+12. Create Enrollment Table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Create table ENROLLMENT
+(SID number(12) not null,
+CLASS_ID number(12) not null,
+GRADE varchar(2),
+CREDIT number(2),
+STATUS varchar(10),
+FOREIGN KEY (SID) REFERENCES STUDENT(SID),
+FOREIGN KEY (CLASS_ID) REFERENCES CLASS(CLASS_ID));
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+13. Create Grade_Map table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Create table GRADE_MAP
+(GRADE varchar(2) PRIMARY KEY,
+GRADE_POINTS FLOAT(10) not null);
+
+14. Create global_var table
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+create table GLOBAL_VAR(DEADLINE_ENFORCED NUMBER(1),
+SEMESTER VARCHAR2(12));
+ 
+15. Insert into Admin
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO ADMIN VALUES ('1111', 'Albus','Dumbledore','123456789','26-MAY-84');
+
+16. Insert into Department
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO DEPARTMENT VALUES (1,'CS');
+INSERT INTO DEPARTMENT VALUES (1,'ECE');
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+17. Insert into STUDENT_SPECIAL
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO STUDENT_SPECIAL VALUES (1,'Graduate','In State',0,9,500);
+INSERT INTO STUDENT_SPECIAL VALUES (2,'Graduate','Out Of State',0,9,800);
+INSERT INTO STUDENT_SPECIAL VALUES (3,'Graduate','International',9,9,1000);
+INSERT INTO STUDENT_SPECIAL VALUES (4,'Undergraduate','In State',0,12,400);
+INSERT INTO STUDENT_SPECIAL VALUES (5,'Undergraduate','Out Of State',0,12,700);
+INSERT INTO STUDENT_SPECIAL VALUES (6,'Undergraduate','International',9,12,900);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+18. Insert into USER_LOGIN
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO USER_LOGIN VALUES (1111,'alby','hogwarts','A');
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+19. Insert into grade_map
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO GRADE_MAP VALUES ('A+',4.33);
+INSERT INTO GRADE_MAP VALUES ('A',4.00);
+INSERT INTO GRADE_MAP VALUES ('A-',3.67);
+INSERT INTO GRADE_MAP VALUES ('B+',3.33);
+INSERT INTO GRADE_MAP VALUES ('B',3.00);
+INSERT INTO GRADE_MAP VALUES ('B-',2.67);
+INSERT INTO GRADE_MAP VALUES ('C+',2.33);
+INSERT INTO GRADE_MAP VALUES ('C',2.00);
+INSERT INTO GRADE_MAP VALUES ('C-',1.67);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+20. Insert into GLOBAL_VAR
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO GLOBAL_VAR VALUES('0','Fall2016');
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
