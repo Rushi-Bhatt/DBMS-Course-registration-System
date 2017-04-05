@@ -414,6 +414,7 @@ public class student_home {
 					pre_req_stmt3.setInt(4, credits);
 					pre_req_stmt3.executeUpdate();
 					System.out.println("Waitlisted");
+					studentHome(conn, personid);
 				}else{
 					System.out.println("waitlist not needed. going back to previus menu");
 					studentHome(conn, personid);
@@ -434,7 +435,6 @@ public class student_home {
 				pre_req_stmt3.setInt(4, credits);
 				pre_req_stmt3.executeUpdate();
 				System.out.println("Enrolled");
-
 				studentHome(conn,personid);
 				}
 				else{
