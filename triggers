@@ -46,7 +46,7 @@ create or replace trigger del_waitlist_after_update
 CREATE OR REPLACE TRIGGER "generate_bill_after_iu"
 AFTER 
 	INSERT OR 
-	UPDATE
+	UPDATE OF STATUS
 ON ENROLLMENT
 FOR EACH ROW
 
