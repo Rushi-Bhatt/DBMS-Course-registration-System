@@ -12,7 +12,7 @@ import java.util.*;
 
 public class admin_home {
 	
-	static Scanner sc = new Scanner(System.in);
+	static Scanner sc = new Scanner(System.in).useDelimiter("\\n");
 
 	public static void adminHome(Connection conn, int personid) {
 		try {
@@ -65,7 +65,8 @@ public class admin_home {
 				System.exit(0);
 				break;
 			default:
-				// invalid option selected. Throw back to previous menu.
+				System.out.println("Enter Valid choice");
+				adminHome(conn,personid);
 				break;
 
 			}
@@ -91,6 +92,11 @@ public class admin_home {
 			System.out.println("Press 0 to go back");
 			int choice = sc.nextInt();
 			if (choice == 0) {
+				adminHome(conn, personid);
+			}
+			else
+			{
+				validChoice(0);
 				adminHome(conn, personid);
 			}
 		} catch (Exception ex) {
@@ -279,7 +285,6 @@ public class admin_home {
 	}
 
 	try{
-	conn.setAutoCommit(false);
 	PreparedStatement stmt1 = conn.prepareStatement("SELECT DID from department where DEPT_NAME=?");
 	stmt1.setString(1, dept_name);
 	ResultSet rs = stmt1.executeQuery();
@@ -327,19 +332,8 @@ public class admin_home {
 	catch(SQLException ex)
 	{
 		System.out.println("Course not added successfully. Error: "+ex);
-		if (conn != null) {
-            try {
-                System.err.print("Transaction is being rolled back");
-                conn.rollback();
-            } catch(SQLException exce) {
-            	System.out.println("Course not added successfully. Error: "+exce);
-            }
-        }
-	}
-	finally {
-        conn.setAutoCommit(true);
         menuViewAddCourse(conn, personid);
-    }
+	}
 	//create a query here to add these values in the database table.
 	//if query is successful, display success message and go back to previous menu.
 	//if query is unsuccessful, display specific error message and go back to previous menu.
@@ -383,8 +377,16 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	}
 	System.out.println("Enter 0 to go back to previous menu:-> ");
 	int choice = sc.nextInt();
-	if (choice==0)menuViewAddCourse(conn, personid);
-
+	if (choice==0)
+		{
+			menuViewAddCourse(conn, personid);
+		}
+	else
+	{
+		validChoice(0);
+		menuViewAddCourse(conn, personid);
+	}
+	
 }
 
 
@@ -446,7 +448,11 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 				if (choice == 0) {
 					adminHome(conn, personid);
 				}
-
+				else
+				{
+					validChoice(0);
+					adminHome(conn, personid);
+				}
 			}
 		} catch (Exception ex) {
 			System.out.println(ex);
@@ -493,7 +499,14 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			System.out.println("Enter 0 to go back to previous menu:-> ");
 			int choice = sc.nextInt();
 			if (choice == 0)
+			{
 				menuViewAddClass(conn, personid);
+			}
+			else
+			{
+				validChoice(0);
+				menuViewAddClass(conn, personid);
+			}
 		} catch (Exception ex) {
 			System.out.println("Cannot add class: " + ex);
 			adminAddClass(conn, personid);
@@ -708,7 +721,14 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 			System.out.println("Enter 0 to go back to previous menu:-> ");
 			int choice = sc.nextInt();
 			if (choice == 0)
+			{
 				adminHome(conn, personid);
+			}
+			else
+			{
+				validChoice(0);
+				adminHome(conn, personid);
+			}
 		}
 	}
 	catch(Exception ex){
@@ -765,6 +785,20 @@ public static void adminViewCourse(Connection conn, int personid) throws SQLExce
 	catch(Exception ex){
 		System.out.println("Couldn't perform the action. Error: " + ex);
 	}
+	}
+	
+	public static void validChoice(int choice)
+	{
+		System.out.println("Enter Valid Choice");
+		int c = sc.nextInt();
+		if(c!=choice)
+		{
+			validChoice(choice);
+		}
+		else
+		{
+			return;
+		}
 	}
 
 
